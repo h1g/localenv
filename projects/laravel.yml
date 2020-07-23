@@ -1,0 +1,42 @@
+laravel:
+  git_server: 'https://github.com/'
+  branch: 'develop'
+  tech: 'php'
+  services:
+    nginx:
+      image: 'nginx:latest'
+    fpm:
+    cli:
+      image: 'php:7.4.7-fpm-buster'
+    redis:
+      image: 'redis:5.0.7-alpine'
+      volumes:
+        - /var/lib/redis
+    rabbit:
+      image: 'rabbitmq:latest'
+    mailcatcher:
+      image: 'sj26/mailcatcher:latest'
+      command: '["mailcatcher", "--no-quit", "--foreground", "--ip=0.0.0.0", "--smtp-port=25", "--http-port=80"]'
+    mongo:
+      image: 'mongo:latest'
+      command: '["mongod", "--logpath=/dev/null"]'
+      environment:
+        - MONGO_INITDB_ROOT_USERNAME=admin
+        - MONGO_INITDB_ROOT_PASSWORD=admin
+    mysql:
+      image: 'percona:8'
+      command: '["mysqld", "--default-authentication-plugin=mysql_native_password"]'
+      environment:
+        - MYSQL_ROOT_PASSWORD=pass
+        - MYSQL_DATABASE=db
+        - MYSQL_USER=root
+      volumes:
+        - /var/lib/mysql
+    postgres:
+      image: 'postgres:12'
+      environment:
+        - POSTGRES_PASSWORD=unit
+        - POSTGRES_USER=unit
+        - POSTGRES_DB=unit
+      volumes:
+        - /var/lib/postgresql/data

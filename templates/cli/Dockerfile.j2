@@ -1,0 +1,68 @@
+FROM {{ services_merged['cli']['image'] }}
+
+ENV DEBIAN_FRONTEND=noninteractive
+#Установка базовых програмнных пакетов и начальная настройка системы
+RUN apt-get update
+RUN apt-get install -y --allow-unauthenticated apt-transport-https apt-utils procps iproute2 curl bash-completion git inetutils-ping locales mc nano sudo tzdata wget libcurl4-openssl-dev
+RUN ln -fs /usr/share/zoneinfo/Europe/Moscow /etc/localtime
+RUN dpkg-reconfigure -f noninteractive tzdata
+RUN locale-gen ru_RU.UTF-8
+RUN locale-gen en_US.UTF-8
+
+#Создание идентичного пользователя из-под которого запущен плейбук
+RUN if [ $(getent group {{ ansible_user_gid }}) ]; then groupmod -n {{ ansible_user }} -g {{ ansible_user_gid }} $(getent group {{ ansible_user_gid }}|cut -d ":" -f1); \
+    else groupadd --gid {{ ansible_user_gid }} {{ ansible_user }}; fi
+RUN if [ $(getent passwd {{ ansible_user_uid }}) ]; then usermod -d /home/{{ ansible_user }} -s /bin/bash -l {{ ansible_user }} -u  {{ ansible_user_uid }} -g  {{ ansible_user_gid }} $(getent passwd {{ ansible_user_uid }}|cut -d ":" -f1); mkhomedir_helper {{ ansible_user }}; \
+    else useradd -m --home /home/{{ ansible_user }} -s /bin/bash {{ ansible_user }} --uid  {{ ansible_user_uid }} --gid  {{ ansible_user_gid }}; fi
+RUN echo "{{ ansible_user }} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/{{ ansible_user | regex_replace('\.','')}}
+
+#Настройка пользователя и выставление нужных разрешений
+COPY ./bashrc /bashrc
+RUN cat /bashrc >> /home/{{ ansible_user }}/.bashrc && rm /bashrc
+
+RUN mkdir -p /var/www
+RUN chown -R {{ ansible_user }}:root /var/run/ /var/log/ /opt
+RUN chown -R {{ ansible_user }}:{{ ansible_user }} /home/{{ ansible_user }} /var/www
+
+{% if 'workers' in services %}
+RUN apt-get install -y supervisor
+{% endif %}
+
+{% if tech == 'php' %}
+#Секция для технологии: php
+#задаем переменные для работы xdebug
+ENV XDEBUG_CONFIG remote_host=host.docker.internal remote_enable=1
+ENV PHP_IDE_CONFIG serverName={{ repo_name }}.{{ project }}.{{ tld_default }}
+
+RUN mkdir -p /run/php/
+RUN chown -R {{ ansible_user }}:root /run/php/
+#Устанавливаем компосер, необходимые php модули и их зависимости
+{% if services_merged['cli']['image']|regex_replace (':.*','') == 'php' %}
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+RUN apt-get install -y {% for deps in php_modules_deps|intersect(php_modules|default(php_modules_default)) %}{{ php_modules_deps[deps]|join(' ') }} {% endfor %}
+
+RUN pecl config-set php_ini "${PHP_INI_DIR}/php.ini"
+RUN docker-php-source extract
+RUN for i in {{ php_modules|default(php_modules_default)|join(' ') }}; do \
+    if [ -d "/usr/src/php/ext/${i}" ]; then \
+    /usr/local/bin/docker-php-ext-install -j4 $i; else \
+    /usr/local/bin/pecl install $i; fi\
+    done;
+RUN docker-php-ext-enable {{ php_modules| join (' ')}}
+RUN rm -rf /tmp/pear
+{% endif %}
+{% endif %}
+{% if tech == 'nodejs' %}
+#Секция для технологии: nodejs
+ENV NPM_CONFIG_LOGLEVEL info
+RUN npm install -g gulp-cli
+RUN npm install -g npm-cli-login
+{% endif %}
+
+COPY ./build.sh /build.sh
+
+RUN chmod +x /build.sh
+
+WORKDIR /var/www
+USER {{ ansible_user }}

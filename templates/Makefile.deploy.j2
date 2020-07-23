@@ -1,0 +1,18 @@
+{% set all_project_files=lookup('fileglob',playbook_dir + '/projects/*.yml',wantlist=True) %}
+{% for project_file in all_project_files %}
+{% set project_data=lookup('file',project_file)|from_yaml %}
+{% set project = project_file|basename|regex_replace('\\.yml','') %}
+{% for repo_name in  project_data.keys() %}
+{% set service_dir=services_dir +'/' + project + '_' + repo_name %}
+deploy-{{ project }}-{{ repo_name }}:
+	@test -f {{ service_dir }}/docker-compose.yml && docker-compose -f {{ service_dir }}/docker-compose.yml down --remove-orphans || exit 0
+	@ansible-playbook -i inventory localenv.yml --extra-vars='project={{ project }} repo_name={{ repo_name }}'
+	@docker-compose -f {{ service_dir }}/docker-compose.yml build
+{% if 'cli' in project_data[repo_name]['services'] %}
+	@docker-compose -f {{ service_dir }}/docker-compose.yml up -d {{ project }}-{{ repo_name }}-cli
+	@docker exec {{ project }}-{{ repo_name }}-cli /build.sh
+{% endif %}
+	@docker-compose -f {{ service_dir }}/docker-compose.yml up -d
+-include {{ service_dir }}/Makefile
+{% endfor %}
+{% endfor %}

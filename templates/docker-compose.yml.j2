@@ -1,0 +1,90 @@
+version: '3.6'
+services:
+{% for service in services.keys()|sort %}
+{% set service_data = services_merged[service] %}
+{% set image = service_data['image'] %}
+  {{ project }}-{{ repo_name }}-{{ service }}:
+    container_name: {{ project }}-{{ repo_name }}-{{ service }}
+    hostname: {{ project }}-{{ repo_name }}-{{ service }}
+{% if (playbook_dir + '/templates/' + service + '/Dockerfile.j2') is file %}
+    build:
+      context: ./{{ service }}/
+      dockerfile: Dockerfile
+      network: host
+    image: {{ image + '_' + project + '_' + repo_name }}
+{% else %}
+    image: {{ image }}
+{% endif %}
+{% if service_data['environment'] is defined %}
+    environment:
+{% for service_environment in service_data['environment'] %}
+      - {{ service_environment }}
+{% endfor %}
+{% endif %}
+{% if service_data['volumes'] is defined %}
+    volumes:
+{% for volume in service_data['volumes']|default('') %}
+{% if ':' in volume %}
+      - {{ volume }}
+{% else %}
+      - {{ project + '-' + repo_name + '-' + service + volume|replace('/','-') }}:{{ volume }}
+{% endif %}
+{% endfor %}
+{% if service in [ 'cli' ] or image == cli_image + '_' + project + '_' + repo_name %}
+{% if  cache_dirs[tech] is defined %}
+      - {{ cache_dirs[tech] }}
+{% endif %}
+{% endif %}
+{% endif %}
+{% if  service_data['ports'] is defined %}
+    ports:
+{% for port in service_data['ports'] %}
+      - '{{ port }}'
+{% endfor %}
+{% endif %}
+{% if  service_data['extra_hosts'] is defined %}
+    extra_hosts:
+{% for extra_host in service_data['extra_hosts'] %}
+      - '{{ extra_host }}'
+{% endfor %}
+{% endif %}
+{% if service == 'cli' and cli_depends_on is defined %}
+    depends_on:
+{% for service in cli_depends_on %}
+      - {{ project }}-{{ repo_name }}-{{ service }}
+{% endfor %}
+{% endif %}
+{% if image  == cli_image + '_' + project + '_' + repo_name or (service == 'nginx' and 'cli' in services_merged) %}
+    depends_on:
+      - {{ project }}-{{ repo_name }}-cli
+{% endif %}
+{% if service_data['command'] is defined %}
+    command: {{ service_data['command'] }}
+{% endif %}
+{% if image  == cli_image + '_' + project + '_' + repo_name or service == 'cli' %}
+    stdin_open: true
+    tty: true
+{% endif %}
+    restart: always
+    networks:
+      default:
+        aliases:
+          - {{ service }}
+      localenv:
+        aliases:
+          - {{ project }}-{{ repo_name }}-{{ service }}
+          - {{ service }}.{{ repo_name }}.{{ project }}.{{ tld_default }}
+{% if service == 'nginx' %}
+          - {{ repo_name }}.{{ project }}.{{ tld_default }}
+{% endif %}
+{% endfor %}
+{% if  persistent_volumes|length >0 %}
+volumes:
+{% for volume in persistent_volumes %}
+  {{ project + '-' + repo_name + '-' + volume|replace('/','-') }}:
+{% endfor %}
+{% endif %}
+networks:
+  localenv:
+    external:
+      name: localenv

@@ -1,0 +1,22 @@
+#Домен верхнего уровня для генерации доменов локального окружения
+tld_default: 'localenv'
+
+#Директория для хранения сервисных файлов развертываемого проекта
+service_dir: "{{ services_dir }}/{{ project }}_{{ repo_name }}"
+#Директория для хранения исходного кода развертываемого проекта
+source_dir:  "{{ sources_dir }}/{{ project }}_{{ repo_name }}"
+
+#Домашняя директория, в которой будут созданы папки для хранения кеша
+home_dir: "{{ lookup('env','HOME') }}"
+
+#Словарь сопоставления директорий хранения кеша хост системы и контейнера для разных технологий
+cache_dirs:
+  npm: "{{ home_dir }}/.npm:{{ home_dir }}/.npm"
+  php: "{{ home_dir }}/.composer:{{ home_dir }}/.composer"
+  ruby: "{{ home_dir }}/.bundle/{{ project }}_{{ repo_name }}:{{ home_dir }}/.gem"
+
+
+git_server: "git@github.com:"
+git_code_branch_default: 'master'
+
+cli_image: "ubuntu:latest"

@@ -1,0 +1,53 @@
+#Желаемая версия интерпритатора
+php_version: '7.4.8'
+#Определяем образ для cli контейнера
+cli_image: "{{ services['cli']['image']|default('php:' + php_version + '-fpm-buster') }}"
+#Задаем список команд необходимых для развертывания приложения
+build_command: "composer install"
+#Список зависимостей для пхп расширений
+php_modules_deps:
+  zip:
+    - xz-utils
+    - zstd
+    - libzip-dev
+    - libbz2-dev
+  xml:
+    - libxml2-dev
+  tidy:
+    - libtidy-dev
+  amqp:
+    - librabbitmq-dev
+  gd:
+    - libpng-dev
+  gmp:
+    - libgmp-dev
+  ldap:
+    - libldap2-dev
+  mbstring:
+    - libonig-dev
+  pgsql:
+    - libpq-dev
+  pspell:
+    - libpspell-dev
+  yaml:
+    - libyaml-dev
+#Список пхп расширений устанавливаемых по умолчанию
+php_modules:
+  - "mongodb"
+  - "bcmath"
+  - "bz2"
+  - "curl"
+  - "gd"
+  - "gmp"
+  - "intl"
+  - "mbstring"
+  - "mysqli"
+  - "pgsql"
+  - "pspell"
+  - "redis"
+  - "soap"
+  - "tidy"
+  - "xml"
+  - "xdebug"
+  - "yaml"
+  - "zip"

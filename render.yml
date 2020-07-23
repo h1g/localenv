@@ -1,0 +1,11 @@
+- name: "Render Makefile.deploy with deploy targets for all projects"
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - "{{ playbook_dir }}/vars/main.yml"
+  tasks:
+    - name: "Render Makefile.deploy with deploy targets for all projects"
+      template:
+        src: "{{ playbook_dir }}/templates/Makefile.deploy.j2"
+        dest: "{{ playbook_dir }}/Makefile.deploy"
+

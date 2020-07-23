@@ -1,0 +1,8 @@
+projects/*
+!projects/dev.yml
+!projects/laravel.yml
+services/*
+sources/*
+*.retry
+.ready
+Makefile.deploy

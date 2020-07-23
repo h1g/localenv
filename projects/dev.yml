@@ -1,0 +1,29 @@
+localenv:
+  tech: 'service'
+  services:
+    dind:
+      extra_hosts:
+        - "host.docker.internal:{{ lookup('env','LE_NET_GW') }}"
+      volumes:
+        - '/var/run/docker.sock:/var/run/docker.sock'
+        - '/etc/hosts:/etc/hosts.docker'
+
+localenvwsl:
+  tech: 'service'
+  services:
+    nginx:
+      ports:
+        - "80:80"
+    dind:
+      volumes:
+        - '/var/run/docker.sock:/var/run/docker.sock'
+        - '/mnt/c/Windows/System32/Drivers/etc/hosts:/etc/hosts.docker'
+
+localenvmac:
+  tech: 'service'
+  services:
+    dns-nginx:
+    dind:
+      volumes:
+        - '/var/run/docker.sock:/var/run/docker.sock'
+        - '/private/etc/hosts:/etc/hosts.docker'

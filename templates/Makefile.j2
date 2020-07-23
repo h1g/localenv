@@ -1,0 +1,37 @@
+{{ project }}-{{ repo_name }}-pull:
+	@docker-compose -f {{ service_dir }}/docker-compose.yml pull
+{{ project }}-{{ repo_name }}-up:
+	@docker-compose -f {{ service_dir }}/docker-compose.yml up -d
+{{ project }}-{{ repo_name }}-down:
+	@docker-compose -f {{ service_dir }}/docker-compose.yml down
+{{ project }}-{{ repo_name }}-restart:  {{ project }}-{{ repo_name }}-down  {{ project }}-{{ repo_name }}-up
+{% if 'cli' in services %}
+{{ project }}-{{ repo_name }}-build:
+	@docker-compose -f {{ service_dir }}/docker-compose.yml down
+	@docker-compose -f {{ service_dir }}/docker-compose.yml build
+	@docker-compose -f {{ service_dir }}/docker-compose.yml up -d {{ project }}-{{ repo_name }}-cli
+	@docker exec {{ project }}-{{ repo_name }}-cli /build.sh
+	@docker-compose -f {{ service_dir }}/docker-compose.yml up -d
+{{ project }}-{{ repo_name }}-exec:
+	@docker exec -ti {{ project }}-{{ repo_name }}-cli bash -l
+{% endif %}
+{% if repo_name == 'localenv' %}
+dns:
+	@docker restart dev-localenv-dind
+{% endif %}
+{% if project == 'dev' %}
+sre:
+	@sudo service docker restart
+{% endif %}
+{% if 'redis' in services %}
+{{ project }}-{{ repo_name }}-exec-redis-cli:
+	@docker exec -ti {{ project }}-{{ repo_name }}-redis redis-cli
+{% endif %}
+{% if 'workers' in services %}
+{{ project }}-{{ repo_name }}-exec-workers:
+	@docker exec -ti {{ project }}-{{ repo_name }}-workers bash -l
+{% endif %}
+{% if 'fpm' in services %}
+{{ project }}-{{ repo_name }}-exec-fpm:
+	@docker exec -ti {{ project }}-{{ repo_name }}-fpm bash -l
+{% endif %}
