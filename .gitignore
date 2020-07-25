@@ -3,6 +3,7 @@ projects/*
 !projects/laravel.yml
 services/*
 sources/*
+configs/*
 *.retry
 .ready
 Makefile.deploy

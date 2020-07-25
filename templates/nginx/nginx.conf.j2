@@ -3,7 +3,7 @@ server {
   server_name ~^(?<repo_name>.+)\.(?<project>.+)\.(?<tld>.+)$;
   add_header 'Access-Control-Allow-Origin' '*';
   resolver 127.0.0.11 valid=1s;
-
+  root /var/www/public;
 {% if project == 'dev' %}
   location / {
         proxy_set_header Host $repo_name.$project.localenv;

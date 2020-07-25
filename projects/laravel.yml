@@ -1,6 +1,8 @@
 laravel:
   git_server: 'https://github.com/'
   branch: 'develop'
+  configs: true
+  configs_repo: 'git@github.com:h1g/configs-laravel-laravel.git'
   tech: 'php'
   services:
     nginx:

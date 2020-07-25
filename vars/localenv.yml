@@ -2,30 +2,36 @@
 tld_default: 'localenv'
 
 #Директория для хранения сервисных файлов развертываемого проекта
-service_dir: "{{ services_dir }}/{{ project }}_{{ repo_name }}"
+service_dir: "{{ services_dir + '/' + project + '_' + repo_name }}"
 #Директория для хранения исходного кода развертываемого проекта
-source_dir:  "{{ sources_dir }}/{{ project }}_{{ repo_name }}"
+source_dir:  "{{ sources_dir + '/' + project + '_' + repo_name }}"
 #Директория для хранения конфигурационных файлов развертываемого проекта
-config_dir:  "{{ configs_dir }}/{{ project }}_{{ repo_name }}"
+config_dir:  "{{ configs_dir + '/' + project + '_' + repo_name }}"
 
 #Домашняя директория, в которой будут созданы папки для хранения кеша
 home_dir: "{{ lookup('env','HOME') }}"
 
 #Словарь сопоставления директорий хранения кеша хост системы и контейнера для разных технологий
 cache_dirs:
-  npm: "{{ home_dir }}/.npm:{{ home_dir }}/.npm"
-  php: "{{ home_dir }}/.composer:{{ home_dir }}/.composer"
-  ruby: "{{ home_dir }}/.bundle/{{ project }}_{{ repo_name }}:{{ home_dir }}/.gem"
+  npm: "{{ home_dir + '/.npm:' + home_dir + '/.npm'}}"
+  php: "{{ home_dir + '/.composer:' + home_dir + '/.composer'}}"
+  ruby: "{{ home_dir + '/.bundle/' + project + '_' + repo_name + ':' + home_dir + '/.gem'}}"
 
 #Основной сервер хранения исходного кода проектов
 git_server: "git@github.com:"
+
+#Путь хранения репозитория с исходным кодом проекта
+source_repo: "{{ git_server + project + '/' repo_name + '.git'}}"
 #Ветка по умолчанию при получении исходного кода из git репозитория
 git_code_branch_default: 'master'
 
 #Будем ли получать конфиги
 configs: false
+
 #Путь хранения репозитория с конфигурационными файлами
-
-
+configs_repo: "{{ git_server + project + '/configs-' + repo_name }}"
+#Название ветки конфигов которая подключается по умолчанию
+configs_parent: "master"
 
 cli_image: "ubuntu:latest"
+

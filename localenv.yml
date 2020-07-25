@@ -37,12 +37,6 @@
         path: "{{ service_dir }}"
         state: directory
 
-    - name: "Create sources directory: {{ source_dir }}"
-      file:
-        path: "{{ source_dir }}"
-        state: directory
-      when: tech not in ['service']
-
     - name: "Generate cli_depends_on list"
       set_fact:
         cli_depends_on: "{{ cli_depends_on|default([]) + [ item.key ] }}"
@@ -80,6 +74,11 @@
 
     - name: "Code receive block"
       block:
+        - name: "Create sources directory: {{ source_dir }}"
+          file:
+            path: "{{ source_dir }}"
+            state: directory
+
         - name: "Git pull branch: {{ branch|default(git_code_branch_default) }} from {{ git_server }}{{ project }}/{{ repo_name }}.git to {{ source_dir }}"
           git:
             accept_hostkey: yes
@@ -87,9 +86,43 @@
             repo: "{{ git_server }}{{ project }}/{{ repo_name }}.git"
             version: "{{ branch|default('master') }}"
             force: "{{ get_code_force|default('no') }}"
+
       rescue:
         - name: fail on error
           fail:
             msg: "Filed: Git pull branch: {{ branch|default('master') }} from {{ git_server }}{{ project }}/{{ repo_name }}.git to {{ source_dir }} \
                   - lock Pull is not possible because you have unmerged files. Please, fix them up in the work tree"
       when: tech not in ['service']
+
+    - name: "Configs receive block"
+      block:
+      - name: "Create config directory: {{ config_dir }}"
+        file:
+          path: "{{ config_dir }}"
+          state: directory
+
+      - name: "Git pull configs from {{ configs_repo }} to {{ config_dir }}"
+        git:
+          accept_hostkey: yes
+          dest: "{{ config_dir }}"
+          repo: "{{ configs_repo }}"
+          version: "master"
+          force: "{{ get_configs_force|default('no') }}"
+
+      - name: "Load parent configs dir"
+        set_fact:
+          configs_parent: "{{ lookup('file', config_dir + '/' + branch + '/.parent') }}"
+        when: (config_dir + '/' + branch + '/.parent') is file
+
+      - name: "Links configs from : {{ config_dir + '/' + configs_parent }} to {{ source_dir }}"
+        include: "{{ playbook_dir }}/configs.yml configs_branch={{ configs_parent }}"
+
+      - name: "Links configs from : {{ config_dir + '/' + branch }} to {{ source_dir }}"
+        include: "{{ playbook_dir }}/configs.yml configs_branch={{ branch }}"
+        when: (config_dir + '/' + branch ) is directory
+
+      rescue:
+        - name: fail on error
+          fail:
+            msg: "lock Pull is not possible because you have unmerged files. Please, fix them up in the work tree"
+      when: tech not in [ 'service' ] and configs
