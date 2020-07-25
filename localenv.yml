@@ -49,10 +49,6 @@
       when: item.key not in ['cli','nginx'] and 'cli' in services.keys() and item.value['image'] != services['cli']['image'] + '_' + project + '_' + repo_name
       loop: "{{ services|dict2items }}"
 
-#    - debug:
-#        var: cli_depends_on
-#    - meta: end_play
-
     - name: "Generate persistent_volumes list"
       set_fact:
         persistent_volumes: "{{ persistent_volumes|default([]) + item.value['volumes']|flatten|reject('search',':')|map('regex_replace','(.*)',item.key + '\\1')|list  }}"
