@@ -45,7 +45,7 @@ make project-repo_name-exec-fpm       # запуск интерпритатор�
 make project-repo_name-exec-redis-cli # запуск redis-cli внутри REDIS контейнера 
 ```
 
-##### Пример для бэкенда Colibri: 
+##### Пример для фреймворка Laravel: 
 ```shell
 make deploy_laravel_laravel
 ```
