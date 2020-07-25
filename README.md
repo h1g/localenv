@@ -71,6 +71,10 @@ localenv                              # Рабочая директория ло
 ├── sources                           # Исходный код проектов
 │   ├── laravel_laravel               # Код фреймворка Laravel
 │   └── laravel_docs                  # Документация к фреймворку Laravel
+├── configs                           # Исходный код проектов
+│   └── laravel_laravel               # Конфиги фреймворка Laravel
+│       ├── develop                   # Конфиги для ветки master
+│       └── master                    # Конфиги для ветки develop
 │    
 ├── services                          # Сервисная директория посервисными папками для каждого сервиса
 │   ├── laravel_laravel               # Директории docker-compose и прочих нужный файлов для colibri_api_s1
