@@ -4,11 +4,6 @@ server {
   add_header 'Access-Control-Allow-Origin' '*';
   resolver 127.0.0.11 valid=1s;
 
-{% if tech == 'html' %}
-  root /var/www;
-{% else %}
-  root {{ services_merged['nginx'][ 'nginx_root_dir' ]|default('/var/www/public') }};
-{% endif %}
 {% if project == 'dev' %}
   location / {
         proxy_set_header Host $repo_name.$project.localenv;

@@ -1,0 +1,8 @@
+postgres12:
+  image: 'postgres:12'
+  environment:
+    - POSTGRES_PASSWORD=unit
+    - POSTGRES_USER=unit
+    - POSTGRES_DB=unit
+  volumes:
+    - /var/lib/postgresql/data

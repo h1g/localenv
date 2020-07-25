@@ -1,0 +1,2 @@
+dind:
+  image: 'docker:latest'

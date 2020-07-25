@@ -32,7 +32,7 @@ laravel:
         - MYSQL_USER=root
       volumes:
         - /var/lib/mysql
-    postgres:
+    postgres12:
       image: 'postgres:12'
       environment:
         - POSTGRES_PASSWORD=unit
@@ -40,3 +40,11 @@ laravel:
         - POSTGRES_DB=unit
       volumes:
         - /var/lib/postgresql/data
+docs:
+  git_server: 'https://github.com/'
+  branch: 'master'
+  tech: 'html'
+  services:
+    nginx:
+      volumes:
+        - '{{ source_dir }}:/var/www/public'

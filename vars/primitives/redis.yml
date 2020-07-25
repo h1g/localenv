@@ -1,0 +1,4 @@
+redis:
+  image: 'redis:5.0.7-alpine'
+  volumes:
+    - /var/lib/redis

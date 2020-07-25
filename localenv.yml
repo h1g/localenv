@@ -11,10 +11,20 @@
         "{{ item.key }}": "{{ item.value }}"
       loop: "{{ lookup('vars',repo_name)|dict2items }}"
 
-    - name: "Load tech oriented variables/services_default dictionary"
+    - name: "Load tech oriented variables"
       include_vars:
-        dir: "{{ playbook_dir + '/vars/' }}"
-        files_matching: "{{  tech + '.yml' }}|services_default.yml"
+        dir: "{{ playbook_dir + '/vars/tech' }}"
+        files_matching: "{{ tech + '.yml' }}"
+
+    - name: "Load docker-compose services primitives"
+      include_vars:
+        dir: "{{ playbook_dir + '/vars/primitives/' }}"
+        name: services_primitives
+        files_matching: "{{ services.keys()|join('.yml|') }}"
+
+    - name: "Merge docker-compose project services with services primitives"
+      set_fact:
+        services: "{{ services_primitives|combine(services|dict2items|rejectattr('value','equalto',none)|list|items2dict,recursive=True) }}"
 
     - name: "Create package cache directory for tech {{ tech }} - {{ cache_dirs[tech]|regex_replace('^.*:(.*)$','\\1') }}"
       file:
@@ -22,43 +32,38 @@
         state: directory
       when: tech in cache_dirs.keys()
 
-    - name: "Create projects/services directories"
+    - name: "Create services directory: {{ service_dir }}"
       file:
-        path: "{{ item }}"
+        path: "{{ service_dir }}"
         state: directory
-      loop:
-        - "{{ service_dir }}"
-        - "{{ source_dir }}"
 
-    - name: "Generate services_merged from services_default"
-      set_fact:
-        services_merged: "{{ services_merged|default({})|combine({item: services_default[item]}) }}"
-      when: services_default[item] is defined
-      loop: "{{ services.keys() }}"
-
-    - name: "Merge services_merged from services"
-      set_fact:
-        services_merged: "{{ services_merged|combine({item: services[item]},recursive=True) }}"
-      when: services[item] is mapping
-      loop: "{{ services.keys() }}"
+    - name: "Create sources directory: {{ source_dir }}"
+      file:
+        path: "{{ source_dir }}"
+        state: directory
+      when: tech not in ['service']
 
     - name: "Generate cli_depends_on list"
       set_fact:
         cli_depends_on: "{{ cli_depends_on|default([]) + [ item.key ] }}"
-      when: item.key not in ['cli','nginx'] and 'cli' in services_merged.keys() and item.value['image'] != services_merged['cli']['image'] + '_' + project + '_' + repo_name
-      loop: "{{ services_merged|dict2items }}"
+      when: item.key not in ['cli','nginx'] and 'cli' in services.keys() and item.value['image'] != services['cli']['image'] + '_' + project + '_' + repo_name
+      loop: "{{ services|dict2items }}"
+
+#    - debug:
+#        var: cli_depends_on
+#    - meta: end_play
 
     - name: "Generate persistent_volumes list"
       set_fact:
         persistent_volumes: "{{ persistent_volumes|default([]) + item.value['volumes']|flatten|reject('search',':')|map('regex_replace','(.*)',item.key + '\\1')|list  }}"
       when: item.value['volumes'] is defined
-      loop: "{{ services_merged|dict2items }}"
+      loop: "{{ services|dict2items }}"
 
     - name: "Create dcoker-composer services dirs for project : {{ project }}/{{ repo_name }}"
       file:
         path: "{{ service_dir }}/{{ item.path }}"
         state: directory
-      when: item.state == 'directory' and item.path in services_merged.keys()
+      when: item.state == 'directory' and item.path in services.keys()
       loop: "{{ lookup('filetree',playbook_dir + '/templates/') }}"
 
     - name: "Render templated services files for project : {{ project }}/{{ repo_name }}"
@@ -66,7 +71,7 @@
         src: "{{ playbook_dir }}/templates/{{ item.path }}"
         dest: "{{ service_dir }}/{{ item.path|regex_replace('\\.j2','') }}"
         mode: preserve
-      when: item.state == 'file' and item.path is search ('.j2') and ( item.path in ['Makefile.j2' , 'docker-compose.yml.j2'] or item.path|dirname in services_merged.keys() )
+      when: item.state == 'file' and item.path is search ('.j2') and ( item.path in ['Makefile.j2' , 'docker-compose.yml.j2'] or item.path|dirname in services.keys() )
       loop: "{{ lookup('filetree',playbook_dir + '/templates/') }}"
 
     - name: "Render services files for project : {{ project }}/{{ repo_name }}"
@@ -74,7 +79,7 @@
         src: "{{ playbook_dir }}/templates/{{ item.path }}"
         dest: "{{ service_dir }}/{{ item.path }}"
         mode: preserve
-      when: item.state == 'file' and item.path is not search ('.j2') and item.path|dirname in services_merged.keys()
+      when: item.state == 'file' and item.path is not search ('.j2') and item.path|dirname in services.keys()
       loop: "{{ lookup('filetree',playbook_dir + '/templates/') }}"
 
     - name: "Code receive block"

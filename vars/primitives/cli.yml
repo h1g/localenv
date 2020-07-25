@@ -1,0 +1,7 @@
+cli:
+  image: '{{ cli_image }}'
+  volumes:
+    - '{{ source_dir }}:/var/www'
+    - '{{ home_dir }}/.ssh/:{{ home_dir }}/.ssh/'
+    - '{{ home_dir }}/.gitconfig:{{ home_dir }}/.gitconfig'
+  command: '[ "bash" ]'

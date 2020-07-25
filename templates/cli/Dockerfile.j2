@@ -1,4 +1,4 @@
-FROM {{ services_merged['cli']['image'] }}
+FROM {{ services['cli']['image'] }}
 
 ENV DEBIAN_FRONTEND=noninteractive
 #Установка базовых програмнных пакетов и начальная настройка системы
@@ -37,7 +37,7 @@ ENV PHP_IDE_CONFIG serverName={{ repo_name }}.{{ project }}.{{ tld_default }}
 RUN mkdir -p /run/php/
 RUN chown -R {{ ansible_user }}:root /run/php/
 #Устанавливаем компосер, необходимые php модули и их зависимости
-{% if services_merged['cli']['image']|regex_replace (':.*','') == 'php' %}
+{% if services['cli']['image']|regex_replace (':.*','') == 'php' %}
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 RUN apt-get install -y {% for deps in php_modules_deps|intersect(php_modules|default(php_modules_default)) %}{{ php_modules_deps[deps]|join(' ') }} {% endfor %}

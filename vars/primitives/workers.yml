@@ -1,0 +1,5 @@
+workers:
+  image: "{{ cli_image + '_' + project + '_' + repo_name }}"
+  volumes:
+    - '{{ source_dir }}:/var/www'
+  command: '["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]'

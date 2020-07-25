@@ -1,7 +1,7 @@
 version: '3.6'
 services:
 {% for service in services.keys()|sort %}
-{% set service_data = services_merged[service] %}
+{% set service_data = services[service] %}
 {% set image = service_data['image'] %}
   {{ project }}-{{ repo_name }}-{{ service }}:
     container_name: {{ project }}-{{ repo_name }}-{{ service }}
@@ -54,7 +54,7 @@ services:
       - {{ project }}-{{ repo_name }}-{{ service }}
 {% endfor %}
 {% endif %}
-{% if image  == cli_image + '_' + project + '_' + repo_name or (service == 'nginx' and 'cli' in services_merged) %}
+{% if image  == cli_image + '_' + project + '_' + repo_name or (service == 'nginx' and 'cli' in services) %}
     depends_on:
       - {{ project }}-{{ repo_name }}-cli
 {% endif %}

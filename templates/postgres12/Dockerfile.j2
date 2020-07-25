@@ -1,4 +1,4 @@
-FROM {{ services_merged['postgres']['image'] }}
+FROM {{ services['postgres12']['image'] }}
 
 ENV POSTGRES_HOST_AUTH_METHOD trust
 

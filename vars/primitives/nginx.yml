@@ -1,0 +1,4 @@
+nginx:
+  image: 'nginx:latest'
+  volumes:
+    - '{{ source_dir }}:/var/www'

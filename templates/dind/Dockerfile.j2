@@ -1,4 +1,4 @@
-FROM {{ services_merged['dind']['image'] }}
+FROM {{ services['dind']['image'] }}
 
 COPY ./entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
