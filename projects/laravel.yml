@@ -7,7 +7,7 @@ laravel:
       image: 'nginx:latest'
     fpm:
     cli:
-      image: 'php:7.4.7-fpm-buster'
+      image: 'php:fpm'
     redis:
       image: 'redis:5.0.7-alpine'
       volumes:

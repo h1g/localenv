@@ -45,11 +45,12 @@ RUN apt-get install -y {% for deps in php_modules_deps|intersect(php_modules|def
 RUN pecl config-set php_ini "${PHP_INI_DIR}/php.ini"
 RUN docker-php-source extract
 RUN for i in {{ php_modules|default(php_modules_default)|join(' ') }}; do \
-    if [ -d "/usr/src/php/ext/${i}" ]; then \
-    /usr/local/bin/docker-php-ext-install -j4 $i; else \
-    /usr/local/bin/pecl install $i; fi\
+    if [ "$(php -m|grep -w ${i}|wc -l)" -eq 0 ]; then \
+      if [ -d "/usr/src/php/ext/${i}" ]; then \
+        /usr/local/bin/docker-php-ext-install -j4 $i; else /usr/local/bin/pecl install $i; docker-php-ext-enable $i; \
+      fi; \
+    fi; \
     done;
-RUN docker-php-ext-enable {{ php_modules| join (' ')}}
 RUN rm -rf /tmp/pear
 {% endif %}
 {% endif %}

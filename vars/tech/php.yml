@@ -1,7 +1,5 @@
-#Желаемая версия интерпритатора
-php_version: '7.4.8'
 #Определяем образ для cli контейнера
-cli_image: "{{ services['cli']['image']|default('php:' + php_version + '-fpm-buster') }}"
+cli_image: "{{ services['cli']['image']|default('php:fpm') }}"
 #Задаем список команд необходимых для развертывания приложения
 build_command: "composer install"
 #Список зависимостей для пхп расширений
