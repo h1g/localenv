@@ -14,6 +14,8 @@ localenvwsl:
     nginx:
       ports:
         - "80:80"
+      volumes:
+        - '/etc/nginx'
     dind:
       volumes:
         - '/var/run/docker.sock:/var/run/docker.sock'
@@ -22,7 +24,11 @@ localenvwsl:
 localenvmac:
   tech: 'service'
   services:
-    dns-nginx:
+    nginx:
+      volumes:
+        - '/etc/nginx'
+      ports:
+        - "80:80"
     dind:
       volumes:
         - '/var/run/docker.sock:/var/run/docker.sock'
