@@ -1,4 +1,4 @@
-{{ project }}-{{ repo_name }}-pull:
+{{ project }}-{{ repo_name }}-images-pull:
 	@docker-compose -f {{ service_dir }}/docker-compose.yml pull
 {{ project }}-{{ repo_name }}-up:
 	@docker-compose -f {{ service_dir }}/docker-compose.yml up -d
@@ -26,6 +26,9 @@ sre:
 {% if 'redis' in services %}
 {{ project }}-{{ repo_name }}-exec-redis-cli:
 	@docker exec -ti {{ project }}-{{ repo_name }}-redis redis-cli
+{{ project }}-{{ repo_name }}-publish-redis:
+	@docker ps -q --filter "name=dev-publish-redis" | grep -q . && docker stop dev-publish-redis || exit 0
+	@docker run -d --rm --name dev-publish-redis --publish 6379:6379 --network=localenv alpine/socat tcp-listen:6379,fork,reuseaddr tcp-connect:{{ project }}-{{ repo_name }}-redis:6379
 {% endif %}
 {% if 'workers' in services %}
 {{ project }}-{{ repo_name }}-exec-workers:
