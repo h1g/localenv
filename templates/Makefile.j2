@@ -26,9 +26,6 @@ sre:
 {% if 'redis' in services %}
 {{ project }}-{{ repo_name }}-exec-redis-cli:
 	@docker exec -ti {{ project }}-{{ repo_name }}-redis redis-cli
-{{ project }}-{{ repo_name }}-publish-redis:
-	@docker ps -q --filter "name=dev-publish-redis" | grep -q . && docker stop dev-publish-redis || exit 0
-	@docker run -d --rm --name dev-publish-redis --publish 6379:6379 --network=localenv alpine/socat tcp-listen:6379,fork,reuseaddr tcp-connect:{{ project }}-{{ repo_name }}-redis:6379
 {% endif %}
 {% if 'workers' in services %}
 {{ project }}-{{ repo_name }}-exec-workers:
@@ -38,3 +35,9 @@ sre:
 {{ project }}-{{ repo_name }}-exec-fpm:
 	@docker exec -ti {{ project }}-{{ repo_name }}-fpm bash -l
 {% endif %}
+
+{% for service in services if service in services_ports.keys() %}
+{{ project }}-{{ repo_name }}-publish-{{ service }}:
+	@docker ps -q --filter "name=dev-publish-{{ service }}" | grep -q . && docker stop dev-publish-{{ service }} || true
+	@docker run -d --rm --name dev-publish-{{ service }} --publish {{ services_ports[service] }}:{{ services_ports[service] }} --network=localenv alpine/socat tcp-listen:{{ services_ports[service] }},fork,reuseaddr tcp-connect:{{ project }}-{{ repo_name }}-{{ service }}:{{ services_ports[service] }}
+{% endfor %}

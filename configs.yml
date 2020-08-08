@@ -13,7 +13,7 @@
     dest: "{{ source_dir + '/' + symlink_file.path }}"
     state: link
     force: yes
-  when: symlink_file.state == 'file' and symlink_file.src.find('.j2') == -1 and symlink_file.src|basename not in ['.parent' , '.gitignore' , 'vault.yml' , '.gitlab-ci.yml']
+  when: symlink_file.state == 'file' and symlink_file.src.find('.j2') == -1 and symlink_file.src|basename not in [ '.parent' , 'vault.yml' ]
   loop: "{{ [ lookup('filetree',config_dir + '/' + configs_branch + '/') ] }}"
   loop_control:
     loop_var: symlink_file
@@ -26,7 +26,7 @@
   template:
     src: "{{  templated_file.src }}"
     dest: "{{ source_dir + '/' + templated_file.path }}"
-  when: templated_file.state == 'file' and templated_file.src.find('.j2') != -1 and templated_file.src|basename not in ['.parent' , '.gitignore' , 'vault.yml' , '.gitlab-ci.yml']
+  when: templated_file.state == 'file' and templated_file.src.find('.j2') != -1 and templated_file.src|basename not in [ '.parent' , 'vault.yml' ]
   loop: "{{ [ lookup('filetree',config_dir + '/' + configs_branch + '/') ] }}"
   loop_control:
     loop_var: templated_file

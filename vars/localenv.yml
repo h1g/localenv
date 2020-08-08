@@ -1,5 +1,5 @@
 #Домен верхнего уровня для генерации доменов локального окружения
-tld_default: 'localenv'
+tld_default: "localenv"
 
 #Директория для хранения сервисных файлов развертываемого проекта
 service_dir: "{{ services_dir + '/' + project + '_' + repo_name }}"
@@ -13,15 +13,15 @@ home_dir: "{{ lookup('env','HOME') }}"
 
 #Словарь сопоставления директорий хранения кеша хост системы и контейнера для разных технологий
 cache_dirs:
-  npm: "{{ home_dir + '/.npm:' + home_dir + '/.npm'}}"
-  php: "{{ home_dir + '/.composer:' + home_dir + '/.composer'}}"
-  ruby: "{{ home_dir + '/.bundle/' + project + '_' + repo_name + ':' + home_dir + '/.gem'}}"
+  npm: "{{ home_dir + '/.npm:' + home_dir + '/.npm' }}"
+  php: "{{ home_dir + '/.composer:' + home_dir + '/.composer' }}"
+  ruby: "{{ home_dir + '/.bundle/' + project + '_' + repo_name + ':' + home_dir + '/.gem' }}"
 
 #Основной сервер хранения исходного кода проектов
 git_server: "git@github.com:"
 
 #Путь хранения репозитория с исходным кодом проекта
-source_repo: "{{ git_server + project + '/' repo_name + '.git'}}"
+source_repo: "{{ git_server + project + '/' + repo_name + '.git' }}"
 #Ветка по умолчанию при получении исходного кода из git репозитория
 git_code_branch_default: 'master'
 
@@ -29,9 +29,17 @@ git_code_branch_default: 'master'
 configs: false
 
 #Путь хранения репозитория с конфигурационными файлами
-configs_repo: "{{ git_server + project + '/configs-' + repo_name }}"
+config_repo: "{{ git_server + project + '/configs-' + repo_name + '.git' }}"
 #Название ветки конфигов которая подключается по умолчанию
 configs_parent: "master"
 
+#Образ для CLI контейнера по умолчанию
 cli_image: "ubuntu:latest"
 
+#Словарь для определения пробрасываемых сервисных портов
+services_ports:
+  redis: "6379"
+  postgres: "5432"
+  mysql: "3306"
+  mongo: "27017"
+  rabbit: "15672"

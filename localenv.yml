@@ -49,7 +49,7 @@
       when: item.value['volumes'] is defined
       loop: "{{ services|dict2items }}"
 
-    - name: "Create dcoker-composer services dirs for project : {{ project }}/{{ repo_name }}"
+    - name: "Create docker-compose services dirs for project : {{ project }}/{{ repo_name }}"
       file:
         path: "{{ service_dir }}/{{ item.path }}"
         state: directory
@@ -79,18 +79,18 @@
             path: "{{ source_dir }}"
             state: directory
 
-        - name: "Git pull branch: {{ branch|default(git_code_branch_default) }} from {{ git_server }}{{ project }}/{{ repo_name }}.git to {{ source_dir }}"
+        - name: "Git pull branch: {{ branch|default('master') }} from {{ source_repo }} to {{ source_dir }}"
           git:
             accept_hostkey: yes
             dest: "{{ source_dir }}"
-            repo: "{{ git_server }}{{ project }}/{{ repo_name }}.git"
+            repo: "{{ source_repo }}"
             version: "{{ branch|default('master') }}"
-            force: "{{ get_code_force|default('no') }}"
+            force: "{{ get_sources_force|default('no') }}"
 
       rescue:
         - name: fail on error
           fail:
-            msg: "Filed: Git pull branch: {{ branch|default('master') }} from {{ git_server }}{{ project }}/{{ repo_name }}.git to {{ source_dir }} \
+            msg: "Filed: Git pull branch: {{ branch|default('master') }} from {{ source_repo }} to {{ source_dir }} \
                   - lock Pull is not possible because you have unmerged files. Please, fix them up in the work tree"
       when: tech not in ['service']
 
@@ -101,11 +101,11 @@
           path: "{{ config_dir }}"
           state: directory
 
-      - name: "Git pull configs from {{ configs_repo }} to {{ config_dir }}"
+      - name: "Git pull configs from {{ config_repo }} to {{ config_dir }}"
         git:
           accept_hostkey: yes
           dest: "{{ config_dir }}"
-          repo: "{{ configs_repo }}"
+          repo: "{{ config_repo }}"
           version: "master"
           force: "{{ get_configs_force|default('no') }}"
 
