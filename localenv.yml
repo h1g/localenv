@@ -17,11 +17,9 @@
         files_matching: "{{ tech + '.yml' }}"
 
     - name: "Load docker-compose services primitives"
-      include_vars:
-        dir: "{{ playbook_dir + '/vars/primitives/' }}"
-        name: services_primitives
-        files_matching: "{{ services.keys()|join('.yml|') }}"
-
+      set_fact:
+        services_primitives: "{{ services_primitives|default({})|combine(lookup('template', playbook_dir + '/templates/primitives/' + item + '.yml.j2')|from_yaml) }}"
+      loop: "{{ services.keys() }}"
     - name: "Merge docker-compose project services with services primitives"
       set_fact:
         services: "{{ services_primitives|combine(services|dict2items|rejectattr('value','equalto',none)|list|items2dict,recursive=True) }}"
@@ -36,12 +34,6 @@
       file:
         path: "{{ service_dir }}"
         state: directory
-
-    - name: "Generate cli_depends_on list"
-      set_fact:
-        cli_depends_on: "{{ cli_depends_on|default([]) + [ item.key ] }}"
-      when: item.key not in ['cli','nginx'] and 'cli' in services.keys() and item.value['image'] != services['cli']['image'] + '_' + project + '_' + repo_name
-      loop: "{{ services|dict2items }}"
 
     - name: "Generate persistent_volumes list"
       set_fact:

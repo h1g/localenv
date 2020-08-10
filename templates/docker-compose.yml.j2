@@ -2,7 +2,6 @@ version: '3.6'
 services:
 {% for service in services.keys()|sort %}
 {% set service_data = services[service] %}
-{% set image = service_data['image'] %}
   {{ project }}-{{ repo_name }}-{{ service }}:
     container_name: {{ project }}-{{ repo_name }}-{{ service }}
     hostname: {{ project }}-{{ repo_name }}-{{ service }}
@@ -11,63 +10,9 @@ services:
       context: ./{{ service }}/
       dockerfile: Dockerfile
       network: host
-    image: {{ image + '_' + project + '_' + repo_name }}
-{% else %}
-    image: {{ image }}
+{% set service_data = service_data|combine({'image': service_data['image'] + '_' + project + '_' + repo_name}) %}
 {% endif %}
-{% if service_data['environment'] is defined %}
-    environment:
-{% for service_environment in service_data['environment'] %}
-      - {{ service_environment }}
-{% endfor %}
-{% endif %}
-{% if service_data['volumes'] is defined %}
-    volumes:
-{% for volume in service_data['volumes']|default('') %}
-{% if ':' in volume %}
-      - {{ volume }}
-{% else %}
-      - {{ project + '-' + repo_name + '-' + service + volume|replace('/','-') }}:{{ volume }}
-{% endif %}
-{% endfor %}
-{% if service in [ 'cli' ] or image == cli_image + '_' + project + '_' + repo_name %}
-{% if  cache_dirs[tech] is defined %}
-      - {{ cache_dirs[tech] }}
-{% endif %}
-{% if configs %}
-      - {{ config_dir }}:{{ config_dir }}
-{% endif %}
-{% endif %}
-{% endif %}
-{% if  service_data['ports'] is defined %}
-    ports:
-{% for port in service_data['ports'] %}
-      - '{{ port }}'
-{% endfor %}
-{% endif %}
-{% if  service_data['extra_hosts'] is defined %}
-    extra_hosts:
-{% for extra_host in service_data['extra_hosts'] %}
-      - '{{ extra_host }}'
-{% endfor %}
-{% endif %}
-{% if service == 'cli' and cli_depends_on is defined %}
-    depends_on:
-{% for service in cli_depends_on %}
-      - {{ project }}-{{ repo_name }}-{{ service }}
-{% endfor %}
-{% endif %}
-{% if image  == cli_image + '_' + project + '_' + repo_name or (service == 'nginx' and 'cli' in services) %}
-    depends_on:
-      - {{ project }}-{{ repo_name }}-cli
-{% endif %}
-{% if service_data['command'] is defined %}
-    command: {{ service_data['command'] }}
-{% endif %}
-{% if image  == cli_image + '_' + project + '_' + repo_name or service == 'cli' %}
-    stdin_open: true
-    tty: true
-{% endif %}
+{{ service_data|to_nice_yaml|indent(4,true) }}
     restart: always
     networks:
       default:

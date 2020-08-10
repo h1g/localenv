@@ -1,0 +1,8 @@
+nginx:
+  image: 'nginx:latest'
+  volumes:
+    - '{{ source_dir }}:/var/www'
+{% if 'cli' in services.keys() %}
+  depends_on:
+    - {{ project }}-{{ repo_name }}-cli
+{% endif %}

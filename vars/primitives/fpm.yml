@@ -1,7 +1,0 @@
-fpm:
-  image: "{{ cli_image + '_' + project + '_' + repo_name }}"
-  volumes:
-    - '{{ source_dir }}:/var/www'
-    - '{{ home_dir }}/.ssh/:{{ home_dir }}/.ssh/'
-    - '{{ home_dir }}/.gitconfig:{{ home_dir }}/.gitconfig'
-  command: '["php-fpm", "--nodaemonize"]'

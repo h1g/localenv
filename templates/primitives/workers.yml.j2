@@ -1,0 +1,13 @@
+workers:
+  image: "{{ cli_image + '_' + project + '_' + repo_name }}"
+  volumes:
+    - '{{ source_dir }}:/var/www'
+{% if configs %}
+    - {{ config_dir }}:{{ config_dir }}
+{% endif %}
+{% if  cache_dirs[tech] is defined %}
+    - {{ cache_dirs[tech] }}
+{% endif %}
+  command: ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
+  depends_on:
+    - {{ project }}-{{ repo_name }}-cli
