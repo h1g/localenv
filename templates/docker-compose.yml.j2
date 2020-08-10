@@ -2,9 +2,9 @@ version: '3.6'
 services:
 {% for service in services.keys()|sort %}
 {% set service_data = services[service] %}
-  {{ project }}-{{ repo_name }}-{{ service }}:
-    container_name: {{ project }}-{{ repo_name }}-{{ service }}
-    hostname: {{ project }}-{{ repo_name }}-{{ service }}
+  {{ project_name }}-{{ service }}:
+    container_name: {{ project_name }}-{{ service }}
+    hostname: {{ project_name }}-{{ service }}
 {% if (playbook_dir + '/templates/' + service + '/Dockerfile.j2') is file %}
     build:
       context: ./{{ service }}/
@@ -20,7 +20,7 @@ services:
           - {{ service }}
       localenv:
         aliases:
-          - {{ project }}-{{ repo_name }}-{{ service }}
+          - {{ project_name }}-{{ service }}
           - {{ service }}.{{ repo_name }}.{{ project }}.{{ tld_default }}
 {% if service == 'nginx' %}
           - {{ repo_name }}.{{ project }}.{{ tld_default }}

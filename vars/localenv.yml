@@ -1,12 +1,14 @@
 #Домен верхнего уровня для генерации доменов локального окружения
 tld_default: "localenv"
 
+#Полное название проекта
+project_name: "{{ project + '-' + repo_name }}"
 #Директория для хранения сервисных файлов развертываемого проекта
-service_dir: "{{ services_dir + '/' + project + '_' + repo_name }}"
+service_dir: "{{ services_dir + '/' + project_name }}"
 #Директория для хранения исходного кода развертываемого проекта
-source_dir:  "{{ sources_dir + '/' + project + '_' + repo_name }}"
+source_dir:  "{{ sources_dir + '/' +  project_name }}"
 #Директория для хранения конфигурационных файлов развертываемого проекта
-config_dir:  "{{ configs_dir + '/' + project + '_' + repo_name }}"
+config_dir:  "{{ configs_dir + '/' +  project_name }}"
 
 #Домашняя директория, в которой будут созданы папки для хранения кеша
 home_dir: "{{ lookup('env','HOME') }}"
@@ -15,7 +17,7 @@ home_dir: "{{ lookup('env','HOME') }}"
 cache_dirs:
   npm: "{{ home_dir + '/.npm:' + home_dir + '/.npm' }}"
   php: "{{ home_dir + '/.composer:' + home_dir + '/.composer' }}"
-  ruby: "{{ home_dir + '/.bundle/' + project + '_' + repo_name + ':' + home_dir + '/.gem' }}"
+  ruby: "{{ home_dir + '/.bundle/' + project_name + ':' + home_dir + '/.gem' }}"
 
 #Основной сервер хранения исходного кода проектов
 git_server: "git@github.com:"
@@ -29,7 +31,7 @@ git_code_branch_default: 'master'
 configs: false
 
 #Путь хранения репозитория с конфигурационными файлами
-config_repo: "{{ git_server + project + '/configs-' + repo_name + '.git' }}"
+config_repo: "{{ git_server + project + '/configs/' + repo_name + '.git' }}"
 #Название ветки конфигов которая подключается по умолчанию
 configs_parent: "master"
 
