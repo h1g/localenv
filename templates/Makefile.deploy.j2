@@ -1,13 +1,48 @@
 {% for project_file in lookup('fileglob',playbook_dir + '/projects/*.yml',wantlist=True) %}
-{% set project_data=lookup('file',project_file)|from_yaml %}
-{% set project = project_file|basename|regex_replace('\\.yml','') %}
-{% for repo_name in  project_data.keys() if project_data[repo_name] is mapping %}
-{% set project_name=project + '-' + repo_name %}
-{% set service_dir=services_dir +'/' + project_name %}
+{% set project_data  = lookup('file',project_file)|from_yaml %}
+{% set project       = project_file|basename|regex_replace('\\.yml','') %}
+{% for repo_name in project_data.keys() if project_data[repo_name] is mapping %}
+{% set project_name  = project + '-' + repo_name %}
+{% set service_dir   = services_dir + '/' + project_name %}
+{% set source_dir    = sources_dir  + '/' + project_name %}
+{% set config_dir    = configs_dir  + '/' + project_name %}
+{% set repo_data     = project_data[repo_name] %}
+{% set git_server    = repo_data['git_server']|default(git_server) %}
+{% set tech          = repo_data['tech'] %}
 deploy-{{ project_name }}:
 	@test -f {{ service_dir }}/docker-compose.yml && docker-compose -f {{ service_dir }}/docker-compose.yml down --remove-orphans || exit 0
+	@mkdir -p {{ service_dir }}
+{% if tech in cache_dirs.keys() %}
+	@mkdir -p {{ cache_dirs[tech]|regex_replace('^.*:(.*)$','\\1') }}
+{% endif %}
 	@ansible-playbook -i inventory localenv.yml --extra-vars='project={{ project }} repo_name={{ repo_name }}'
 	@docker-compose -f {{ service_dir }}/docker-compose.yml build
+{% if tech != 'service' %}
+{% set source_repo   = repo_data['source_repo']|default(git_server + project + '/' + repo_name + '.git') %}
+{% set source_branch = repo_data['branch']|default('master') %}
+ifneq ($(wildcard {{ source_dir + '/.git' }}),)
+	@git -C {{ source_dir }} pull origin {{ source_branch }}
+else
+	@git clone --branch {{ source_branch }} {{ source_repo }} {{ source_dir }}
+endif
+{% endif %}
+{% if repo_data['configs']|default(configs) %}
+{% set config_repo   = repo_data['configs_repo']|default(git_server + project + '/configs/' + repo_name + '.git') %}
+{% set config_branch = 'master' %}
+ifneq ($(wildcard {{ config_dir + '/.git' }}),)
+	@git -C {{ config_dir }} pull origin {{ config_branch }}
+else
+	@git clone --branch {{ config_branch }} {{ config_repo }} {{ config_dir }}
+endif
+ifneq ($(wildcard {{ config_dir + '/' + source_branch + '/.parent' }}),)
+	@ansible-playbook -i inventory configs.yml --extra-vars='project={{ project }} repo_name={{ repo_name }} configs_branch=$(shell cat {{ config_dir + '/' + source_branch + '/.parent' }})'
+endif
+ifneq ($(wildcard {{ config_dir + '/' + source_branch }}),)
+	@ansible-playbook -i inventory configs.yml --extra-vars='project={{ project }} repo_name={{ repo_name }} configs_branch={{ source_branch }}'
+else
+	@ansible-playbook -i inventory configs.yml --extra-vars='project={{ project }} repo_name={{ repo_name }} configs_branch={{ configs_parent }}'
+endif
+{% endif %}
 {% if 'cli' in project_data[repo_name]['services'] %}
 	@docker-compose -f {{ service_dir }}/docker-compose.yml up -d {{ project_name }}-cli
 	@docker exec {{ project_name }}-cli /build.sh

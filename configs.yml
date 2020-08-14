@@ -1,32 +1,37 @@
-- name: "Create all configs dirs"
-  file:
-    dest: "{{ source_dir + '/' + configs_dirs.path }}"
-    state: directory
-  when: configs_dirs.state == 'directory'
-  loop: "{{ [ lookup('filetree',config_dir + '/' + configs_branch + '/') ] }}"
-  loop_control:
-    loop_var: configs_dirs
+- name: "Sync configs project {{ project }} / {{ repo_name }} to {{ configs_branch }}"
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - "{{ playbook_dir }}/vars/main.yml"
+    - "{{ playbook_dir }}/vars/localenv.yml"
+  tasks:
+    - name: "Generate summary hier list"
+      set_fact:
+        hier_list: "{{ lookup('filetree',config_dir + '/' + configs_branch + '/', wantlist=True ) }}"
 
-- name: "Symlink configs from : {{ config_dir + '/' + config_branch }} to {{ source_dir }}"
-  file:
-    src: "{{  symlink_file.src }}"
-    dest: "{{ source_dir + '/' + symlink_file.path }}"
-    state: link
-    force: yes
-  when: symlink_file.state == 'file' and symlink_file.src.find('.j2') == -1 and symlink_file.src|basename not in [ '.parent' , 'vault.yml' ]
-  loop: "{{ [ lookup('filetree',config_dir + '/' + configs_branch + '/') ] }}"
-  loop_control:
-    loop_var: symlink_file
+    - name: "Create all configs dirs"
+      file:
+        dest: "{{ source_dir + '/' + item.path }}"
+        state: directory
+      when: item.state is defined and item.state == 'directory'
+      loop: "{{ hier_list }}"
 
-- name: "Load vars from vault file"
-  include_vars: "{{ config_dir + '/' + configs_branch + '/vault.yml' }}"
-  when: (config_dir + '/' + configs_branch + '/vault.yml') is file
+    - name: "Symlink configs from {{ config_dir + '/' + configs_branch }} to {{ source_dir }}"
+      file:
+        src: "{{  item.src }}"
+        dest: "{{ source_dir + '/' + item.path }}"
+        state: link
+        force: yes
+      when: item.state == 'file' and item.src.find('.j2') == -1 and item.src|basename not in [ '.parent' , 'vault.yml' ]
+      loop: "{{ hier_list }}"
 
-- name: "Copy templated configs from : {{ config_dir + '/' + config_branch }} to {{ source_dir }}"
-  template:
-    src: "{{  templated_file.src }}"
-    dest: "{{ source_dir + '/' + templated_file.path }}"
-  when: templated_file.state == 'file' and templated_file.src.find('.j2') != -1 and templated_file.src|basename not in [ '.parent' , 'vault.yml' ]
-  loop: "{{ [ lookup('filetree',config_dir + '/' + configs_branch + '/') ] }}"
-  loop_control:
-    loop_var: templated_file
+    - name: "Load vars from vault file"
+      include_vars: "{{ config_dir + '/' + configs_branch + '/vault.yml' }}"
+      when: (config_dir + '/' + configs_branch + '/vault.yml') is file
+
+    - name: "Copy templated configs from : {{ config_dir + '/' + configs_branch }} to {{ source_dir }}"
+      template:
+        src: "{{  item.src }}"
+        dest: "{{ source_dir + '/' + item.path }}"
+      when: item.state is defined and item.state == 'file' and item.src.find('.j2') != -1 and item.src|basename not in [ '.parent' , 'vault.yml' ]
+      loop: "{{ hier_list }}"

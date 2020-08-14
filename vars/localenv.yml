@@ -10,30 +10,13 @@ source_dir:  "{{ sources_dir + '/' +  project_name }}"
 #Директория для хранения конфигурационных файлов развертываемого проекта
 config_dir:  "{{ configs_dir + '/' +  project_name }}"
 
-#Домашняя директория, в которой будут созданы папки для хранения кеша
-home_dir: "{{ lookup('env','HOME') }}"
-
-#Словарь сопоставления директорий хранения кеша хост системы и контейнера для разных технологий
-cache_dirs:
-  npm: "{{ home_dir + '/.npm:' + home_dir + '/.npm' }}"
-  php: "{{ home_dir + '/.composer:' + home_dir + '/.composer' }}"
-  ruby: "{{ home_dir + '/.bundle/' + project_name + ':' + home_dir + '/.gem' }}"
-
-#Основной сервер хранения исходного кода проектов
-git_server: "git@github.com:"
+#Список всех файлов и дерктори в папке с темплейтами
+templates_hier: "{{ lookup('filetree',playbook_dir + '/templates/',wantlist=True) }}"
 
 #Путь хранения репозитория с исходным кодом проекта
 source_repo: "{{ git_server + project + '/' + repo_name + '.git' }}"
-#Ветка по умолчанию при получении исходного кода из git репозитория
-git_code_branch_default: 'master'
-
-#Будем ли получать конфиги
-configs: false
-
 #Путь хранения репозитория с конфигурационными файлами
 config_repo: "{{ git_server + project + '/configs/' + repo_name + '.git' }}"
-#Название ветки конфигов которая подключается по умолчанию
-configs_parent: "master"
 
 #Образ для CLI контейнера по умолчанию
 cli_image: "ubuntu:latest"

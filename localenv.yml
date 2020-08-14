@@ -1,4 +1,4 @@
-- name: "Deploy poject {{ project }} / {{ repo_name }}"
+- name: "Templating project {{ project }} / {{ repo_name }} service files"
   hosts: localhost
   gather_facts: true
   vars_files:
@@ -20,20 +20,10 @@
       set_fact:
         services_primitives: "{{ services_primitives|default({})|combine(lookup('template', playbook_dir + '/templates/primitives/' + item + '.yml.j2')|from_yaml) }}"
       loop: "{{ services.keys() }}"
+
     - name: "Merge docker-compose project services with services primitives"
       set_fact:
         services: "{{ services_primitives|combine(services|dict2items|rejectattr('value','equalto',none)|list|items2dict,recursive=True) }}"
-
-    - name: "Create package cache directory for tech {{ tech }} - {{ cache_dirs[tech]|regex_replace('^.*:(.*)$','\\1') }}"
-      file:
-        path: "{{ cache_dirs[tech]|regex_replace('^.*:(.*)$','\\1') }}"
-        state: directory
-      when: tech in cache_dirs.keys()
-
-    - name: "Create services directory: {{ service_dir }}"
-      file:
-        path: "{{ service_dir }}"
-        state: directory
 
     - name: "Generate persistent_volumes list"
       set_fact:
@@ -46,7 +36,7 @@
         path: "{{ service_dir }}/{{ item.path }}"
         state: directory
       when: item.state == 'directory' and item.path in services.keys()
-      loop: "{{ lookup('filetree',playbook_dir + '/templates/') }}"
+      loop: "{{ templates_hier }}"
 
     - name: "Render templated services files for project : {{ project }}/{{ repo_name }}"
       template:
@@ -54,7 +44,7 @@
         dest: "{{ service_dir }}/{{ item.path|regex_replace('\\.j2','') }}"
         mode: preserve
       when: item.state == 'file' and item.path is search ('.j2') and ( item.path in ['Makefile.j2' , 'docker-compose.yml.j2'] or item.path|dirname in services.keys() )
-      loop: "{{ lookup('filetree',playbook_dir + '/templates/') }}"
+      loop: "{{ templates_hier }}"
 
     - name: "Render services files for project : {{ project }}/{{ repo_name }}"
       copy:
@@ -62,59 +52,4 @@
         dest: "{{ service_dir }}/{{ item.path }}"
         mode: preserve
       when: item.state == 'file' and item.path is not search ('.j2') and item.path|dirname in services.keys()
-      loop: "{{ lookup('filetree',playbook_dir + '/templates/') }}"
-
-    - name: "Code receive block"
-      block:
-        - name: "Create sources directory: {{ source_dir }}"
-          file:
-            path: "{{ source_dir }}"
-            state: directory
-
-        - name: "Git pull branch: {{ branch|default('master') }} from {{ source_repo }} to {{ source_dir }}"
-          git:
-            accept_hostkey: yes
-            dest: "{{ source_dir }}"
-            repo: "{{ source_repo }}"
-            version: "{{ branch|default('master') }}"
-            force: "{{ get_sources_force|default('no') }}"
-
-      rescue:
-        - name: fail on error
-          fail:
-            msg: "Filed: Git pull branch: {{ branch|default('master') }} from {{ source_repo }} to {{ source_dir }} \
-                  - lock Pull is not possible because you have unmerged files. Please, fix them up in the work tree"
-      when: tech not in ['service']
-
-    - name: "Configs receive block"
-      block:
-      - name: "Create config directory: {{ config_dir }}"
-        file:
-          path: "{{ config_dir }}"
-          state: directory
-
-      - name: "Git pull configs from {{ config_repo }} to {{ config_dir }}"
-        git:
-          accept_hostkey: yes
-          dest: "{{ config_dir }}"
-          repo: "{{ config_repo }}"
-          version: "master"
-          force: "{{ get_configs_force|default('no') }}"
-
-      - name: "Load parent configs dir"
-        set_fact:
-          configs_parent: "{{ lookup('file', config_dir + '/' + branch + '/.parent') }}"
-        when: (config_dir + '/' + branch + '/.parent') is file
-
-      - name: "Links configs from : {{ config_dir + '/' + configs_parent }} to {{ source_dir }}"
-        include: "{{ playbook_dir }}/configs.yml configs_branch={{ configs_parent }}"
-
-      - name: "Links configs from : {{ config_dir + '/' + branch }} to {{ source_dir }}"
-        include: "{{ playbook_dir }}/configs.yml configs_branch={{ branch }}"
-        when: (config_dir + '/' + branch ) is directory
-
-      rescue:
-        - name: fail on error
-          fail:
-            msg: "lock Pull is not possible because you have unmerged files. Please, fix them up in the work tree"
-      when: tech not in [ 'service' ] and configs
+      loop: "{{ templates_hier }}"
