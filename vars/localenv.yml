@@ -11,7 +11,7 @@ source_dir:  "{{ sources_dir + '/' +  project_name }}"
 config_dir:  "{{ configs_dir + '/' +  project_name }}"
 
 #Директория хранения примитивов сервисов docker-composer
-services_primitives: "{{ playbook_dir + '/templates/primitives/' }}"
+services_primitives_path: "{{ playbook_dir + '/templates/primitives/' }}"
 
 #Список всех вложенных файлов и деркторий в папке templates
 templates_hier:  "{{ lookup('filetree',playbook_dir + '/templates/',wantlist=True)|reject('search','primitives')|list }}"

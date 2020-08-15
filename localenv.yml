@@ -18,7 +18,7 @@
 
     - name: "Load docker-compose services primitives"
       set_fact:
-        services_primitives: "{{ services_primitives|default({})|combine(lookup('template', services_primitives + item + '.yml.j2')|from_yaml) }}"
+        services_primitives: "{{ services_primitives|default({})|combine(lookup('template',services_primitives_path + item + '.yml.j2')|from_yaml) }}"
       loop: "{{ services.keys() }}"
 
     - name: "Merge docker-compose project services with services primitives"
