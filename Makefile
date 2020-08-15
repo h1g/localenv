@@ -6,9 +6,10 @@ LE_NET_GW  := $(shell docker network inspect localenv --format '{{range .IPAM.Co
 OS_NAME    := $(shell uname -s | tr A-Z a-z)
 export LE_NET_GW
 
-init:
+render:
 	@ansible-playbook -i inventory render.yml
 
+deploy-localenv:
 ifeq ($(OS_NAME),linux)
 ifndef WSL_DISTRO_NAME
 	@make deploy-dev-localenv
@@ -19,4 +20,7 @@ endif
 ifeq ($(OS_NAME),darwin)
 	@make deploy-dev-localenvmac
 endif
+
+init: render deploy-localenv
+
 -include ./Makefile.deploy
