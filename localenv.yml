@@ -1,6 +1,6 @@
 - name: "Templating project {{ project }} / {{ repo_name }} service files"
   hosts: localhost
-  gather_facts: true
+  gather_facts: false
   vars_files:
     - "{{ playbook_dir }}/vars/main.yml"
     - "{{ playbook_dir }}/vars/localenv.yml"
@@ -18,7 +18,7 @@
 
     - name: "Load docker-compose services primitives"
       set_fact:
-        services_primitives: "{{ services_primitives|default({})|combine(lookup('template', playbook_dir + '/templates/primitives/' + item + '.yml.j2')|from_yaml) }}"
+        services_primitives: "{{ services_primitives|default({})|combine(lookup('template', services_primitives + item + '.yml.j2')|from_yaml) }}"
       loop: "{{ services.keys() }}"
 
     - name: "Merge docker-compose project services with services primitives"
@@ -33,23 +33,23 @@
 
     - name: "Create docker-compose services dirs for project : {{ project }}/{{ repo_name }}"
       file:
-        path: "{{ service_dir }}/{{ item.path }}"
+        path: "{{ service_dir }}/{{ item }}"
         state: directory
-      when: item.state == 'directory' and item.path in services.keys()
-      loop: "{{ templates_hier }}"
+      when: item in services.keys()
+      loop: "{{ templates_dirs }}"
 
-    - name: "Render templated services files for project : {{ project }}/{{ repo_name }}"
+    - name: "Render templateds for project : {{ project }}/{{ repo_name }}"
       template:
-        src: "{{ playbook_dir }}/templates/{{ item.path }}"
-        dest: "{{ service_dir }}/{{ item.path|regex_replace('\\.j2','') }}"
+        src: "{{ playbook_dir }}/templates/{{ item }}"
+        dest: "{{ service_dir }}/{{ item|regex_replace('\\.j2','') }}"
         mode: preserve
-      when: item.state == 'file' and item.path is search ('.j2') and ( item.path in ['Makefile.j2' , 'docker-compose.yml.j2'] or item.path|dirname in services.keys() )
-      loop: "{{ templates_hier }}"
+      when: item in ['Makefile.j2','docker-compose.yml.j2'] or item|dirname in services.keys()
+      loop: "{{ templates_templates }}"
 
-    - name: "Render services files for project : {{ project }}/{{ repo_name }}"
+    - name: "Render files for project : {{ project }}/{{ repo_name }}"
       copy:
-        src: "{{ playbook_dir }}/templates/{{ item.path }}"
-        dest: "{{ service_dir }}/{{ item.path }}"
+        src: "{{ playbook_dir }}/templates/{{ item }}"
+        dest: "{{ service_dir }}/{{ item }}"
         mode: preserve
-      when: item.state == 'file' and item.path is not search ('.j2') and item.path|dirname in services.keys()
-      loop: "{{ templates_hier }}"
+      when: item|dirname in services.keys()
+      loop: "{{ templates_files }}"

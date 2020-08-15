@@ -4,7 +4,11 @@ export ANSIBLE_DISPLAY_SKIPPED_HOSTS
 LE_NET_SET := $(shell docker network inspect localenv >/dev/null 2>&1 || docker network create localenv >/dev/null 2>&1)
 LE_NET_GW  := $(shell docker network inspect localenv --format '{{range .IPAM.Config}}{{.Gateway}}{{end}}' )
 OS_NAME    := $(shell uname -s | tr A-Z a-z)
+GID        := $(shell id -g ${USER})
+UID        := $(shell id -u ${USER})
 export LE_NET_GW
+export GID
+export UID
 
 render:
 	@ansible-playbook -i inventory render.yml

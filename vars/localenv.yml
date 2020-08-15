@@ -10,8 +10,17 @@ source_dir:  "{{ sources_dir + '/' +  project_name }}"
 #Директория для хранения конфигурационных файлов развертываемого проекта
 config_dir:  "{{ configs_dir + '/' +  project_name }}"
 
-#Список всех файлов и дерктори в папке с темплейтами
-templates_hier: "{{ lookup('filetree',playbook_dir + '/templates/',wantlist=True) }}"
+#Директория хранения примитивов сервисов docker-composer
+services_primitives: "{{ playbook_dir + '/templates/primitives/' }}"
+
+#Список всех вложенных файлов и деркторий в папке templates
+templates_hier:  "{{ lookup('filetree',playbook_dir + '/templates/',wantlist=True)|reject('search','primitives')|list }}"
+#Список вложенных файлов в папке templates
+templates_files: "{{ templates_hier|selectattr('state','equalto','file')|map(attribute='path')|reject('search','.j2')|list }}"
+#Список вложенных шаблонов в папке templates
+templates_templates: "{{ templates_hier|selectattr('state','equalto','file')|map(attribute='path')|select('search','.j2')|list }}"
+#Список вложенных папок в папке templates
+templates_dirs:  "{{ templates_hier|selectattr('state','equalto','directory')|map(attribute='path')|list }}"
 
 #Путь хранения репозитория с исходным кодом проекта
 source_repo: "{{ git_server + project + '/' + repo_name + '.git' }}"

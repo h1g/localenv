@@ -15,7 +15,7 @@ deploy-{{ project_name }}:
 {% if tech in cache_dirs.keys() %}
 	@mkdir -p {{ cache_dirs[tech]|regex_replace('^.*:(.*)$','\\1') }}
 {% endif %}
-	@ansible-playbook -i inventory localenv.yml --extra-vars='project={{ project }} repo_name={{ repo_name }}'
+	@ansible-playbook -i inventory localenv.yml --extra-vars='project={{ project }} repo_name={{ repo_name }} ansible_user_gid={{ lookup('env','GID') }} ansible_user_uid={{ lookup('env','UID') }} ansible_user={{ lookup('env','USER') }}'
 	@docker-compose -f {{ service_dir }}/docker-compose.yml build
 {% if tech != 'service' %}
 {% set source_repo   = repo_data['source_repo']|default(git_server + project + '/' + repo_name + '.git') %}
