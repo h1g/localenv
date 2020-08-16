@@ -10,6 +10,7 @@ source_dir:  "{{ sources_dir + '/' +  project_name }}"
 #Директория для хранения конфигурационных файлов развертываемого проекта
 config_dir:  "{{ configs_dir + '/' +  project_name }}"
 
+services_primitives: {}
 #Директория хранения примитивов сервисов docker-composer
 services_primitives_path: "{{ playbook_dir + '/templates/primitives/' }}"
 

@@ -15,10 +15,6 @@
 {{ project_name }}-exec:
 	@docker exec -ti {{ project_name }}-cli bash -l
 {% endif %}
-{% if repo_name == 'localenv' %}
-dns:
-	@docker restart dev-localenv-dind
-{% endif %}
 {% if project == 'dev' %}
 sre:
 	@sudo service docker restart
