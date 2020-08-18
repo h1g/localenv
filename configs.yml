@@ -4,26 +4,21 @@
   vars_files:
     - "{{ playbook_dir }}/vars/main.yml"
     - "{{ playbook_dir }}/vars/localenv.yml"
+    - "{{ playbook_dir }}/vars/configs.yml"
   tasks:
-    - name: "Generate summary hier list"
-      set_fact:
-        hier_list: "{{ lookup('filetree',config_dir + '/' + configs_branch + '/', wantlist=True ) }}"
-
     - name: "Create all configs dirs"
       file:
-        dest: "{{ source_dir + '/' + item.path }}"
+        dest: "{{ source_dir + '/' + item }}"
         state: directory
-      when: item.state is defined and item.state == 'directory'
-      loop: "{{ hier_list }}"
+      loop: "{{ configs_dirs }}"
 
     - name: "Symlink configs from {{ config_dir + '/' + configs_branch }} to {{ source_dir }}"
       file:
-        src: "{{  item.src }}"
-        dest: "{{ source_dir + '/' + item.path }}"
+        src: "{{  config_dir + '/' + configs_branch + '/' + item }}"
+        dest: "{{ source_dir + '/' + item }}"
         state: link
         force: yes
-      when: item.state == 'file' and item.src.find('.j2') == -1 and item.src|basename not in [ '.parent' , 'vault.yml' ]
-      loop: "{{ hier_list }}"
+      loop: "{{ configs_files }}"
 
     - name: "Load vars from vault file"
       include_vars: "{{ config_dir + '/' + configs_branch + '/vault.yml' }}"
@@ -31,7 +26,6 @@
 
     - name: "Copy templated configs from : {{ config_dir + '/' + configs_branch }} to {{ source_dir }}"
       template:
-        src: "{{  item.src }}"
-        dest: "{{ source_dir + '/' + item.path }}"
-      when: item.state is defined and item.state == 'file' and item.src.find('.j2') != -1 and item.src|basename not in [ '.parent' , 'vault.yml' ]
-      loop: "{{ hier_list }}"
+        src: "{{  config_dir + '/' + configs_branch + '/' + item }}"
+        dest: "{{ source_dir + '/' + item }}"
+      loop: "{{ configs_templates }}"

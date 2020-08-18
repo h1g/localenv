@@ -1,0 +1,8 @@
+#Список всех вложенных файлов и деркторий в папке templates
+configs_hier:  "{{ lookup('filetree',config_dir + '/' + configs_branch + '/', wantlist=True )|reject('search','.parent|vault.yml')|list }}"
+#Список вложенных файлов в папке с конфигами
+configs_files: "{{ configs_hier|selectattr('state','equalto','file')|map(attribute='path')|reject('search','.j2')|list }}"
+#Список вложенных шаблонов в папке с конфигами
+configs_templates: "{{ configs_hier|selectattr('state','equalto','file')|map(attribute='path')|select('search','.j2')|list }}"
+#Список вложенных папок в папке с конфигами
+configs_dirs:  "{{ configs_hier|selectattr('state','equalto','directory')|map(attribute='path')|list }}"

@@ -1,0 +1,26 @@
+#Домен верхнего уровня для генерации доменов локального окружения
+tld_default: "localenv"
+
+#Список всех вложенных файлов и деркторий в папке templates
+templates_hier:  "{{ lookup('filetree',playbook_dir + '/templates/',wantlist=True)|reject('search','primitives')|list }}"
+#Список вложенных файлов в папке templates
+templates_files: "{{ templates_hier|selectattr('state','equalto','file')|map(attribute='path')|reject('search','.j2')|list }}"
+#Список вложенных шаблонов в папке templates
+templates_templates: "{{ templates_hier|selectattr('state','equalto','file')|map(attribute='path')|select('search','.j2')|list }}"
+#Список вложенных папок в папке templates
+templates_dirs:  "{{ templates_hier|selectattr('state','equalto','directory')|map(attribute='path')|list }}"
+
+services_primitives: {}
+#Директория хранения примитивов сервисов docker-composer
+services_primitives_path: "{{ playbook_dir + '/templates/primitives/' }}"
+
+#Образ для CLI контейнера по умолчанию
+cli_image: "ubuntu:latest"
+
+#Словарь для определения пробрасываемых сервисных портов
+services_ports:
+  redis: "6379"
+  postgres: "5432"
+  mysql: "3306"
+  mongo: "27017"
+  rabbit: "15672"
