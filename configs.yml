@@ -6,12 +6,6 @@
     - "{{ playbook_dir }}/vars/localenv.yml"
     - "{{ playbook_dir }}/vars/configs.yml"
   tasks:
-    - name: "Create all configs dirs"
-      file:
-        dest: "{{ source_dir + '/' + item }}"
-        state: directory
-      loop: "{{ configs_dirs }}"
-
     - name: "Symlink configs from {{ config_dir + '/' + configs_branch }} to {{ source_dir }}"
       file:
         src: "{{  config_dir + '/' + configs_branch + '/' + item }}"
@@ -27,5 +21,5 @@
     - name: "Copy templated configs from : {{ config_dir + '/' + configs_branch }} to {{ source_dir }}"
       template:
         src: "{{  config_dir + '/' + configs_branch + '/' + item }}"
-        dest: "{{ source_dir + '/' + item }}"
+        dest: "{{ source_dir + '/' + item|regex_replace('\\.j2','') }}"
       loop: "{{ configs_templates }}"

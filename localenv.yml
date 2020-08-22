@@ -20,6 +20,7 @@
     - name: "Load docker-compose services primitives"
       set_fact:
         services_primitives: "{{ services_primitives|combine(lookup('template',services_primitives_path + item + '.yml.j2')|from_yaml) }}"
+      when: (services_primitives_path + item + '.yml.j2') is file
       loop: "{{ services.keys() }}"
 
     - name: "Remove empty docker-compose project services"

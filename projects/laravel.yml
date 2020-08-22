@@ -1,8 +1,8 @@
+source_server: 'https://github.com/'
 laravel:
-  git_server: 'https://github.com/'
-  branch: 'develop'
+  source_branch: 'develop'
   configs: true
-  configs_repo: 'git@github.com:h1g/configs-laravel-laravel.git'
+  config_repo: 'git@github.com:h1g/configs-laravel-laravel.git'
   tech: 'php'
   services:
     nginx:
@@ -44,7 +44,7 @@ laravel:
         - /var/lib/postgresql/data
 docs:
   git_server: 'https://github.com/'
-  branch: 'master'
+  source_branch: 'master'
   tech: 'html'
   services:
     nginx:

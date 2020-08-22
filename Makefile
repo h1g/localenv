@@ -10,19 +10,21 @@ export LE_NET_GW
 export GID
 export UID
 
+.PHONY: init
+
 render:
 	@ansible-playbook -i inventory render.yml
 
 deploy-localenv:
 ifeq ($(OS_NAME),linux)
 ifndef WSL_DISTRO_NAME
-	@make deploy-dev-localenv
+	@$(MAKE) deploy-dev-localenv
 else
-	@make deploy-dev-localenvwsl
+	@$(MAKE) deploy-dev-localenvwsl
 endif
 endif
 ifeq ($(OS_NAME),darwin)
-	@make deploy-dev-localenvmac
+	@$(MAKE) deploy-dev-localenvmac
 endif
 
 init: render deploy-localenv

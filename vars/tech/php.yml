@@ -5,30 +5,30 @@ build_command: "composer install"
 #Список зависимостей для пхп расширений
 php_modules_deps:
   zip:
-    - xz-utils
-    - zstd
-    - libzip-dev
-    - libbz2-dev
+    - "xz-utils"
+    - "zstd"
+    - "libzip-dev"
+    - "libbz2-dev"
   xml:
-    - libxml2-dev
+    - "libxml2-dev"
   tidy:
-    - libtidy-dev
+    - "libtidy-dev"
   amqp:
-    - librabbitmq-dev
+    - "librabbitmq-dev"
   gd:
-    - libpng-dev
+    - "libpng-dev"
   gmp:
-    - libgmp-dev
+    - "libgmp-dev"
   ldap:
-    - libldap2-dev
+    - "libldap2-dev"
   mbstring:
-    - libonig-dev
+    - "libonig-dev"
   pgsql:
-    - libpq-dev
+    - "libpq-dev"
   pspell:
-    - libpspell-dev
+    - "libpspell-dev"
   yaml:
-    - libyaml-dev
+    - "libyaml-dev"
 #Список пхп расширений устанавливаемых по умолчанию
 php_modules:
   - "mongodb"

@@ -5,8 +5,41 @@
 {{ project_name }}-down:
 	@docker-compose -f {{ service_dir }}/docker-compose.yml down
 {{ project_name }}-restart:  {{ project_name }}-down  {{ project_name }}-up
+{{ project_name }}-deploy:{% if tech != 'service' %}	{{ project_name }}-deploy-sources{% endif %}{% if configs %}	{{ project_name }}-deploy-configs{% endif %}{% if 'cli' in services %}	{{ project_name }}-deploy-build{% else %}	{{ project_name }}-up{% endif %}
+
+{% if tech != 'service' %}
+{{ project_name }}-deploy-sources:
+ifneq ($(wildcard {{ source_dir + '/.git' }}),)
+	@git -C {{ source_dir }} pull origin {{ source_branch }}
+else
+	@git clone --branch {{ source_branch }} {{ source_repo }} {{ source_dir }}
+endif
+{% endif %}
+{% if configs %}
+{{ project_name }}-deploy-configs:
+ifneq ($(wildcard {{ config_dir + '/.git' }}),)
+	@git -C {{ config_dir }} pull origin {{ config_branch }}
+else
+	@git clone --branch {{ config_branch }} {{ config_repo }} {{ config_dir }}
+endif
+ifneq ($(wildcard {{ config_dir + '/' + source_branch + '/.parent' }}),)
+	@rsync -qav -f"+ */" -f"- *" {{ config_dir + '/' }}$(shell cat {{ config_dir + '/' + source_branch + '/.parent' }})/ {{ source_dir }}
+	@ansible-playbook -i {{ playbook_dir }}/inventory {{ playbook_dir }}/configs.yml --extra-vars='project={{ project }} repo_name={{ repo_name }} configs_branch=$(shell cat {{ config_dir + '/' + source_branch + '/.parent' }})'
+endif
+ifneq ($(wildcard {{ config_dir + '/' + source_branch }}),)
+	@rsync -qav -f"+ */" -f"- *" {{ config_dir + '/' + source_branch }}/ {{ source_dir }}
+	@ansible-playbook -i {{ playbook_dir }}/inventory {{ playbook_dir }}/configs.yml --extra-vars='project={{ project }} repo_name={{ repo_name }} configs_branch={{ source_branch }}'
+else
+	@rsync -qav -f"+ */" -f"- *" {{ config_dir + '/' + config_parent }}/ {{ source_dir }}
+	@ansible-playbook -i {{ playbook_dir }}/inventory {{ playbook_dir }}/configs.yml --extra-vars='project={{ project }} repo_name={{ repo_name }} configs_branch={{ config_parent }}'
+endif
+{% endif %}
 {% if 'cli' in services %}
-{{ project_name }}-build:
+
+{{ project_name }}-deploy-build:
+{% if tech in cache_dirs.keys() %}
+	@mkdir -p {{ cache_dirs[tech]|regex_replace('^.*:(.*)$','\\1') }}
+{% endif %}
 	@docker-compose -f {{ service_dir }}/docker-compose.yml down
 	@docker-compose -f {{ service_dir }}/docker-compose.yml build
 	@docker-compose -f {{ service_dir }}/docker-compose.yml up -d {{ project_name }}-cli
