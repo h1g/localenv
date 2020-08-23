@@ -1,4 +1,5 @@
 #!/bin/bash
+
 {% if 'workers' in services %}
 sudo chown {{ ansible_user }}:root /dev/{stdout,stderr} /etc/supervisor/supervisord.conf /opt/run /run
 sudo ln -sf /var/www/config/supervisord.conf /etc/supervisor/supervisord.conf

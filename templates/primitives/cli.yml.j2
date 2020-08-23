@@ -11,7 +11,7 @@ cli:
     - {{ cache_dirs[tech] }}
 {% endif %}
   command: [ "bash" ]
-{% for service in services.keys() if not (service == 'nginx' or service == 'cli' or (lookup('template', playbook_dir + '/templates/primitives/' + service + '.yml.j2')|from_yaml)[service]['image']|default(services[service]['image']) ==  cli_image + '_' + project + '_' + repo_name) %}
+{% for service in services.keys() if not (service in ['nginx','cli'] or (lookup('template', playbook_dir + '/templates/primitives/' + service + '.yml.j2')|from_yaml)[service]['image']|default(services[service]['image']) ==  cli_image + '_' + project + '_' + repo_name) %}
 {% if loop.index == 1 %}
   depends_on:
 {% endif %}

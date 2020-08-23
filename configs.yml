@@ -4,16 +4,8 @@
   vars_files:
     - "{{ playbook_dir }}/vars/main.yml"
     - "{{ playbook_dir }}/vars/localenv.yml"
-    - "{{ playbook_dir }}/vars/configs.yml"
-  tasks:
-    - name: "Symlink configs from {{ config_dir + '/' + configs_branch }} to {{ source_dir }}"
-      file:
-        src: "{{  config_dir + '/' + configs_branch + '/' + item }}"
-        dest: "{{ source_dir + '/' + item }}"
-        state: link
-        force: yes
-      loop: "{{ configs_files }}"
 
+  tasks:
     - name: "Load vars from vault file"
       include_vars: "{{ config_dir + '/' + configs_branch + '/vault.yml' }}"
       when: (config_dir + '/' + configs_branch + '/vault.yml') is file
@@ -22,4 +14,4 @@
       template:
         src: "{{  config_dir + '/' + configs_branch + '/' + item }}"
         dest: "{{ source_dir + '/' + item|regex_replace('\\.j2','') }}"
-      loop: "{{ configs_templates }}"
+      loop: "{{ lookup('filetree',config_dir + '/' + configs_branch + '/', wantlist=True )|reject('search','.parent|vault.yml')|selectattr('state','equalto','file')|map(attribute='path')|select('search','.j2')|list }}"

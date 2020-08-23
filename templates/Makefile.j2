@@ -22,15 +22,19 @@ ifneq ($(wildcard {{ config_dir + '/.git' }}),)
 else
 	@git clone --branch {{ config_branch }} {{ config_repo }} {{ config_dir }}
 endif
+{% set configs_parent_path = config_dir + '/$(shell cat '+ config_dir + '/' + source_branch + '/.parent)/' %}
 ifneq ($(wildcard {{ config_dir + '/' + source_branch + '/.parent' }}),)
-	@rsync -qav -f"+ */" -f"- *" {{ config_dir + '/' }}$(shell cat {{ config_dir + '/' + source_branch + '/.parent' }})/ {{ source_dir }}
+	@rsync -qav -f"+ */" -f"- *" {{ configs_parent_path }} {{ source_dir }}
+	@find {{ configs_parent_path }} -type f ! -name "*.j2" ! -wholename "*/vault.yml" ! -wholename "*/.parent"|sed 's|{{configs_parent_path}}||'|xargs -I file ln -sf {{configs_parent_path}}file {{ source_dir}}/file
 	@ansible-playbook -i {{ playbook_dir }}/inventory {{ playbook_dir }}/configs.yml --extra-vars='project={{ project }} repo_name={{ repo_name }} configs_branch=$(shell cat {{ config_dir + '/' + source_branch + '/.parent' }})'
 endif
 ifneq ($(wildcard {{ config_dir + '/' + source_branch }}),)
 	@rsync -qav -f"+ */" -f"- *" {{ config_dir + '/' + source_branch }}/ {{ source_dir }}
+	@find {{ config_dir + '/' + source_branch + '/' }} -type f ! -name "*.j2" ! -wholename "*/vault.yml" ! -wholename "*/.parent"|sed 's|{{config_dir + '/' + source_branch + '/'}}||'|xargs -I file ln -sf {{config_dir + '/' + source_branch + '/'}}file {{ source_dir}}/file
 	@ansible-playbook -i {{ playbook_dir }}/inventory {{ playbook_dir }}/configs.yml --extra-vars='project={{ project }} repo_name={{ repo_name }} configs_branch={{ source_branch }}'
 else
 	@rsync -qav -f"+ */" -f"- *" {{ config_dir + '/' + config_parent }}/ {{ source_dir }}
+	@find {{ config_dir + '/' + config_parent + '/' }} -type f ! -name "*.j2" ! -wholename "*/vault.yml" ! -wholename "*/.parent"|sed 's|{{config_dir + '/' + config_parent + '/'}}||'|xargs -I file ln -sf {{config_dir + '/' + config_parent + '/'}}file {{ source_dir}}/file
 	@ansible-playbook -i {{ playbook_dir }}/inventory {{ playbook_dir }}/configs.yml --extra-vars='project={{ project }} repo_name={{ repo_name }} configs_branch={{ config_parent }}'
 endif
 {% endif %}
@@ -47,10 +51,6 @@ endif
 	@docker-compose -f {{ service_dir }}/docker-compose.yml up -d
 {{ project_name }}-exec:
 	@docker exec -ti {{ project_name }}-cli bash -l
-{% endif %}
-{% if project == 'dev' %}
-sre:
-	@sudo service docker restart
 {% endif %}
 {% if 'redis' in services %}
 {{ project_name }}-exec-redis-cli:
