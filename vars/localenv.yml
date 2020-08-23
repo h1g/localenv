@@ -6,3 +6,46 @@ service_dir: "{{ services_dir + '/' + project_name }}"
 source_dir:  "{{ sources_dir + '/' +  project_name }}"
 #Директория для хранения конфигурационных файлов развертываемого проекта
 config_dir:  "{{ configs_dir + '/' +  project_name }}"
+
+#Домен верхнего уровня для генерации доменов локального окружения
+tld_default: "localenv"
+
+services_primitives: {}
+#Директория хранения примитивов сервисов docker-composer
+services_primitives_path: "{{ playbook_dir + '/templates/primitives/' }}"
+
+#Домашняя директория, в которой будут созданы папки для хранения кеша
+home_dir: "{{ lookup('env','HOME') }}"
+
+#Словарь сопоставления директорий хранения кеша хост системы и контейнера для разных технологий
+cache_dirs:
+  npm: "{{ home_dir + '/.npm:' + home_dir + '/.npm' }}"
+  php: "{{ home_dir + '/.composer:' + home_dir + '/.composer' }}"
+  ruby: "{{ home_dir + '/.bundle/' + project_name + ':' + home_dir + '/.gem' }}"
+
+#Основной сервер хранения исходного кода проектов
+source_server: "git@github.com:"
+#Путь хранения репозитория с исходным кодом проекта
+source_repo: "{{ source_server + project + '/' + repo_name + '.git' }}"
+#Ветка по умолчанию при получении исходного кода из git репозитория
+source_branch: 'master'
+
+#Будем ли получать конфиги
+configs: false
+#Путь хранения репозитория с конфигурационными файлами
+config_repo: "{{ source_server + project + '/configs/' + repo_name + '.git' }}"
+#Ветка по умолчанию при получении исходного кода из git репозитория
+config_branch: 'master'
+#Название ветки конфигов которая подключается по умолчанию
+config_parent: "master"
+
+#Образ для CLI контейнера по умолчанию
+cli_image: "ubuntu:latest"
+
+#Словарь для определения пробрасываемых сервисных портов
+services_ports:
+  redis: "6379"
+  postgres: "5432"
+  mysql: "3306"
+  mongo: "27017"
+  rabbit: "15672"

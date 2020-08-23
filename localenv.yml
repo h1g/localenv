@@ -4,7 +4,6 @@
   vars_files:
     - "{{ playbook_dir }}/vars/main.yml"
     - "{{ playbook_dir }}/vars/localenv.yml"
-    - "{{ playbook_dir }}/vars/templates.yml"
     - "{{ playbook_dir }}/projects/{{ project }}.yml"
   tasks:
     - name: "Extract variables for {{ project }} / {{ repo_name }}"
@@ -37,12 +36,16 @@
       when: item.value['volumes'] is defined
       loop: "{{ services|dict2items }}"
 
+    - name: "Load templates filetree"
+      set_fact:
+        templates_filetree:  "{{ lookup('filetree',playbook_dir + '/templates/',wantlist=True)|reject('search','primitives|Makefile.deploy.j2')|list }}"
+
     - name: "Create docker-compose services dirs for project : {{ project }}/{{ repo_name }}"
       file:
         path: "{{ service_dir }}/{{ item }}"
         state: directory
       when: item in services.keys()
-      loop: "{{ templates_dirs }}"
+      loop: "{{ templates_filetree|selectattr('state','equalto','directory')|map(attribute='path')|list }}"
 
     - name: "Render templateds for project : {{ project }}/{{ repo_name }}"
       template:
@@ -50,7 +53,7 @@
         dest: "{{ service_dir }}/{{ item|regex_replace('\\.j2','') }}"
         mode: preserve
       when: item in ['Makefile.j2','docker-compose.yml.j2'] or item|dirname in services.keys()
-      loop: "{{ templates_templates }}"
+      loop: "{{ templates_filetree|selectattr('state','equalto','file')|map(attribute='path')|select('search','.j2')|list }}"
 
     - name: "Render files for project : {{ project }}/{{ repo_name }}"
       copy:
@@ -58,4 +61,4 @@
         dest: "{{ service_dir }}/{{ item }}"
         mode: preserve
       when: item|dirname in services.keys()
-      loop: "{{ templates_files }}"
+      loop: "{{ templates_filetree|selectattr('state','equalto','file')|map(attribute='path')|reject('search','.j2')|list }}"
