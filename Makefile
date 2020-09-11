@@ -1,7 +1,7 @@
 ANSIBLE_DISPLAY_SKIPPED_HOSTS:=false
 export ANSIBLE_DISPLAY_SKIPPED_HOSTS
 
-EXECUTABLES = ansible-playbook docker
+EXECUTABLES = ansible-playbook docker docker-compose
 42 := $(foreach exec,$(EXECUTABLES),\
         $(if $(shell which $(exec)),ERROR: ,$(error "No $(exec) not installed")))
 
