@@ -1,9 +1,7 @@
 # Локальное окружение разработчика 
-## Предустановки:
- - [docker](https://docs.docker.com/engine/install/ubuntu/)
- - [docker-compose](https://docs.docker.com/compose/install/)
- - [ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
-
+## Зависимости:
+ - make
+ - [docker](https://docs.docker.com/install/)
 ## Использование
 #### Универсальный сценарий запуска локального окружения:
 ```shell
@@ -19,7 +17,6 @@ make init
 |-------------------|---------
 |project| название проекта, например - laravel|
 |repo_name| название репозитория в пректе, например - laravel|
-| branch | ветка на которую будет переключен проект при деплое  |
 
 -----------------
 

@@ -4,7 +4,13 @@
   vars_files:
     - "{{ playbook_dir }}/vars/main.yml"
     - "{{ playbook_dir }}/vars/localenv.yml"
+    - "{{ playbook_dir }}/projects/{{ project }}.yml"
   tasks:
+    - name: "Extract variables for {{ project }} / {{ repo_name }}"
+      set_fact:
+        "{{ item.key }}": "{{ item.value }}"
+      loop: "{{ lookup('vars',repo_name)|dict2items }}"
+
     - name: "Load vars from vault file"
       include_vars: "{{ config_dir + '/' + configs_branch + '/vault.yml' }}"
       when: (config_dir + '/' + configs_branch + '/vault.yml') is file

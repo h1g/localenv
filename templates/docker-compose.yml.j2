@@ -26,7 +26,7 @@ services:
           - {{ repo_name }}.{{ project }}.{{ tld_default }}
 {% endif %}
 {% endfor %}
-{% if persistent_volumes is defined %}
+{% if persistent_volumes|length > 0  %}
 volumes:
 {% for volume in persistent_volumes %}
   {{ project + '-' + repo_name + '-' + volume|replace('/','-') }}:

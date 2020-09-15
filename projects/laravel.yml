@@ -2,7 +2,7 @@ source_server: 'https://github.com/'
 laravel:
   source_branch: 'develop'
   configs: true
-  config_repo: 'git@github.com:h1g/configs-laravel-laravel.git'
+  config_repo: 'https://github.com/h1g/configs-laravel-laravel.git'
   tech: 'php'
   services:
     nginx:
