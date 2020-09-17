@@ -3,6 +3,7 @@ FROM docker:latest
 ARG USER=johndeploy
 ARG UID=1337
 ARG GID=$GID
+ARG DOCKER_GID=$GID
 ARG HOME=/home/$USER
 ARG WORKDIR=$HOME
 ARG LE_NET_GW=127.0.0.1
@@ -11,10 +12,14 @@ ENV ANSIBLE_DISPLAY_SKIPPED_HOSTS=false
 ENV PY_COLORS=1
 ENV ANSIBLE_FORCE_COLOR=1
 ENV USER=$USER
-RUN apk -u add bash mc make git rsync docker-compose ansible
-RUN addgroup -g $GID -S $USER \
-&&  adduser --uid $UID --ingroup $USER -h $HOME --shell /bin/bash $USER --disabled-password \
-&&  addgroup $USER ping
+RUN apk -u add bash mc make git rsync docker-compose ansible shadow
+RUN if [ $(getent group $GID) ]; then groupmod -n $USER -g $GID $(getent group $GID|cut -d ":" -f1); \
+    else groupadd --gid $GID $USER; fi
+RUN if [ $(getent passwd $UID) ]; then usermod -d $HOME -s /bin/bash -l $USER -u  $UID -g $GID $(getent passwd $UID|cut -d ":" -f1); mkhomedir_helper $USER; \
+    else useradd -m --home $HOME -s /bin/bash $USER --uid  $UID --gid  $GID; fi
+RUN if [ $(getent group $DOCKER_GID) ]; then groupmod -n docker -g $DOCKER_GID $(getent group $DOCKER_GID|cut -d ":" -f1); \
+    else groupadd --gid $DOCKER_GID $docker; fi
+RUN usermod -aG docker $USER
 USER $USER
 WORKDIR $WORKDIR
 CMD /bin/bash

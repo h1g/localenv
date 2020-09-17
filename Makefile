@@ -10,7 +10,7 @@ localenv   := docker run --rm -v '/var/run/docker.sock:/var/run/docker.sock' -v 
 .PHONY: init
 
 deploy:
-	@docker build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) --build-arg USER=${USER} --build-arg HOME=${HOME} --build-arg WORKDIR=${PWD} --build-arg LE_NET_GW=$(shell docker network inspect localenv --format '{{range .IPAM.Config}}{{.Gateway}}{{end}}' ) -t localenv .
+	@docker build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) --build-arg USER=${USER} --build-arg HOME=${HOME} --build-arg WORKDIR=${PWD} --build-arg DOCKER_GID=$(shell getent group docker|cut -d: -f3) --build-arg LE_NET_GW=$(shell docker network inspect localenv --format '{{range .IPAM.Config}}{{.Gateway}}{{end}}' ) -t localenv .
 render:
 	@$(localenv) ansible-playbook -i inventory render.yml
 
