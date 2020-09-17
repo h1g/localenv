@@ -47,7 +47,7 @@ RUN docker-php-source extract
 RUN for i in {{ php_modules|default(php_modules_default)|join(' ') }}; do \
     if [ "$(php -m|grep -w ${i}|wc -l)" -eq 0 ]; then \
       if [ -d "/usr/src/php/ext/${i}" ]; then \
-        /usr/local/bin/docker-php-ext-install -j4 $i; else /usr/local/bin/pecl install $i; docker-php-ext-enable $i; \
+        /usr/local/bin/docker-php-ext-install -j4 $i; else /usr/local/bin/pecl install $i; docker-php-ext-enable ${i%-*}; \
       fi; \
     fi; \
     done;

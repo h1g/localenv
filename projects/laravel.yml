@@ -4,6 +4,22 @@ laravel:
   configs: true
   config_repo: 'https://github.com/h1g/configs-laravel-laravel.git'
   tech: 'php'
+  php_modules:
+    - "bcmath"
+    - "curl"
+    - "gd"
+    - "gmp"
+    - "intl"
+    - "mbstring"
+    - "mysqli"
+    - "pspell"
+    - "redis-5.3.0"
+    - "soap"
+    - "tidy"
+    - "xml"
+    - "xdebug"
+    - "yaml"
+    - "zip"
   services:
     nginx:
       image: 'nginx:latest'
@@ -14,17 +30,9 @@ laravel:
       image: 'redis:5.0.7-alpine'
       volumes:
         - /var/lib/redis
-    rabbit:
-      image: 'rabbitmq:latest'
     mailcatcher:
       image: 'sj26/mailcatcher:latest'
       command: ["mailcatcher", "--no-quit", "--foreground", "--ip=0.0.0.0", "--smtp-port=25", "--http-port=80"]
-    mongo:
-      image: 'mongo:latest'
-      command: ["mongod", "--logpath=/dev/null"]
-      environment:
-        - MONGO_INITDB_ROOT_USERNAME=admin
-        - MONGO_INITDB_ROOT_PASSWORD=admin
     mysql:
       image: 'percona:8'
       command: ["mysqld", "--default-authentication-plugin=mysql_native_password"]
@@ -34,14 +42,6 @@ laravel:
         - MYSQL_USER=root
       volumes:
         - /var/lib/mysql
-    postgres12:
-      image: 'postgres:12'
-      environment:
-        - POSTGRES_PASSWORD=unit
-        - POSTGRES_USER=unit
-        - POSTGRES_DB=unit
-      volumes:
-        - /var/lib/postgresql/data
 docs:
   git_server: 'https://github.com/'
   source_branch: 'master'

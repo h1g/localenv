@@ -21,7 +21,7 @@ localenvwsl:
         - '/var/run/docker.sock:/var/run/docker.sock'
         - '/mnt/c/Windows/System32/Drivers/etc/hosts:/etc/hosts.docker'
 
-localenvmac:
+localenvosx:
   tech: 'service'
   services:
     nginx:

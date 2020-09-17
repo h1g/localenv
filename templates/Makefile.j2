@@ -11,6 +11,7 @@
 {{ project_name }}-deploy-sources:
 ifneq ($(wildcard {{ source_dir + '/.git' }}),)
 	@$(localenv) git -C {{ source_dir }} pull origin {{ source_branch }}
+	@$(localenv) git -C {{ source_dir }} checkout {{ source_branch }}
 else
 	@$(localenv) git clone --branch {{ source_branch }} {{ source_repo }} {{ source_dir }}
 endif
@@ -24,7 +25,7 @@ else
 endif
 {% set configs_parent_path = config_dir + '/$(shell cat '+ config_dir + '/' + source_branch + '/.parent)/' %}
 ifneq ($(wildcard {{ config_dir + '/' + source_branch + '/.parent' }}),)
-	@$(localenv) sync -qav -f"+ */" -f"- *" {{ configs_parent_path }} {{ source_dir }}
+	@$(localenv) rsync -qav -f"+ */" -f"- *" {{ configs_parent_path }} {{ source_dir }}
 	@$(localenv) find {{ configs_parent_path }} -type f ! -name "*.j2" ! -wholename "*/vault.yml" ! -wholename "*/.parent"|sed 's|{{configs_parent_path}}||'|xargs -I file ln -sf {{configs_parent_path}}file {{ source_dir}}/file
 	@$(localenv) ansible-playbook -i {{ playbook_dir }}/inventory {{ playbook_dir }}/configs.yml --extra-vars='project={{ project }} repo_name={{ repo_name }} configs_branch=$(shell cat {{ config_dir + '/' + source_branch + '/.parent' }})'
 endif
