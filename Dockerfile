@@ -18,7 +18,7 @@ RUN if [ $(getent group $GID) ]; then groupmod -n $USER -g $GID $(getent group $
 RUN if [ $(getent passwd $UID) ]; then usermod -d $HOME -s /bin/bash -l $USER -u  $UID -g $GID $(getent passwd $UID|cut -d ":" -f1); mkhomedir_helper $USER; \
     else useradd -m --home $HOME -s /bin/bash $USER --uid  $UID --gid  $GID; fi
 RUN if [ $(getent group $DOCKER_GID) ]; then groupmod -n docker -g $DOCKER_GID $(getent group $DOCKER_GID|cut -d ":" -f1); \
-    else groupadd --gid $DOCKER_GID $docker; fi
+    else groupadd --gid $DOCKER_GID docker; fi
 RUN usermod -aG docker $USER
 USER $USER
 WORKDIR $WORKDIR
