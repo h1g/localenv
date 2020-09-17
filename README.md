@@ -8,6 +8,11 @@
 sudo usermod -aG docker ${USER}
 # Устанавливаем make и git
 sudo apt install -y make git
+# Создаем ssh ключи (с пустой passphrase)
+ssh-keygen
+# Задаем глобальные настройки git
+git config --global user.name 'FIRST_NAME LAST_NAME'
+git config --global user.email 'OUR_NAME@example.com'
 ```
 #### Универсальный сценарий развертывания универсального локального окружения разработчика:
 ```shell
