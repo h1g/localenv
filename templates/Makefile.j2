@@ -20,6 +20,7 @@ endif
 {{ project_name }}-deploy-configs:
 ifneq ($(wildcard {{ config_dir + '/.git' }}),)
 	@$(localenv) git -C {{ config_dir }} pull origin {{ config_branch }}
+	@$(localenv) git -C {{ config_dir }} checkout {{ config_branch }}
 else
 	@$(localenv) git clone --branch {{ config_branch }} {{ config_repo }} {{ config_dir }}
 endif

@@ -1,0 +1,8 @@
+leproxy:
+  image: 'nginx:latest'
+{% if os_name != "linux" %}
+  ports:
+    - "80:80"
+{% endif %}
+  depends_on:
+    - {{ project_name }}-dind

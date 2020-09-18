@@ -1,5 +1,9 @@
 workers:
   image: "{{ cli_image + '_' + project + '_' + repo_name }}"
+{% if os_name == 'linux' %}
+  extra_hosts:
+    - "host.docker.internal:{{ lookup('env','LE_NET_GW') }}"
+{% endif %}
   volumes:
     - '{{ source_dir }}:/var/www'
 {% if configs %}

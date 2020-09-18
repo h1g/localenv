@@ -16,6 +16,8 @@ ansible_user: "{{ lookup('env','USER') }}"
 ansible_user_gid: "{{ lookup('pipe','id -g ' + ansible_user ) }}"
 #Получаем идентификатор пользователя из-под которого запущен плейбук
 ansible_user_uid: "{{ lookup('pipe','id -u ' + ansible_user ) }}"
+#Получаем тип операционной системы пользователя
+os_name: "{{ lookup('env','OS_NAME') }}"
 
 #Задаем значение по умлочнаю для списка постоянных томов
 persistent_volumes: []

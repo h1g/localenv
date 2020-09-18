@@ -7,8 +7,8 @@
 deploy-{{ project_name }}: {{ project_name }}-render
 	@$(localenv) $(MAKE) -C {{ service_dir }} {{ project_name }}-deploy
 {{ project_name }}-render:
-	@$(localenv) test -f {{ service_dir }}/docker-compose.yml && $(localenv) docker-compose -f {{ service_dir }}/docker-compose.yml down --remove-orphans || true
 	@$(localenv) mkdir -p {{ service_dir }}
+	@$(localenv) test -f {{ service_dir }}/docker-compose.yml && $(localenv) docker-compose -f {{ service_dir }}/docker-compose.yml down --remove-orphans || true
 	@$(localenv) ansible-playbook -i {{ playbook_dir }}/inventory {{ playbook_dir }}/localenv.yml --extra-vars='project={{ project }} repo_name={{ repo_name }}'
 -include {{ service_dir }}/Makefile
 {% endfor %}
