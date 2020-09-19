@@ -1,8 +1,9 @@
 source_server: 'https://github.com/'
 laravel:
-  source_branch: 'develop'
+  source_branch: 'master'
   configs: true
   config_repo: 'https://github.com/h1g/laravel-configs-laravel.git'
+  config_branch: 'master'
   tech: 'php'
   php_modules:
     - "redis-5.3.0"

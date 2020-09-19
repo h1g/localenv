@@ -20,7 +20,7 @@ git config --global user.email 'OUR_NAME@example.com'
 #### Сценарий развертывания локального окружения разработчика:
 ```shell
 # Первоначальное получения кода локального окружения
-git clone git@github.com:h1g/localenv.git
+git clone https://github.com/h1g/localenv.git
 # Все команды выполняются из директории в которую был клонирован
 # код локального окружения разработчика
 cd localenv
