@@ -8,13 +8,12 @@ ifeq (,$(wildcard ${HOME}/.gitconfig))
     $(error "Error: ${HOME}/.gitconfig - gitconfig key does not exist. Run: git config --global user.name 'John Deploy'; git config --global user.email 'johndeploy@example.com'")
 endif
 
-OS_NAME := $(shell uname -s | tr A-Z a-z)
-UID := $(shell id -u)
-GID := $(shell id -g)
+export OS_NAME := $(shell uname -s | tr A-Z a-z)
+export UID := $(shell id -u)
+export GID := $(shell id -g)
 export LE_NET_GW = $(shell docker network inspect localenv --format '{{range .IPAM.Config}}{{.Gateway}}{{end}}' )
 
 docker-wrapper		:= docker run --rm -v '/var/run/docker.sock:/var/run/docker.sock' -v '${HOME}:${HOME}' localenv
-ansible-playbook	:= $(docker-wrapper) ansible-playbook
 
 ifeq (,$(shell which docker-compose))
 export docker-compose = $(docker-wrapper) docker-compose
@@ -41,7 +40,7 @@ endif
 
 ifeq ($(OS_NAME),linux)
 ifdef WSL_DISTRO_NAME
-OS_NAME := "wsl"
+export OS_NAME := "wsl"
 endif
 endif
 
