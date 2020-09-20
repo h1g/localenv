@@ -11,30 +11,31 @@ endif
 OS_NAME := $(shell uname -s | tr A-Z a-z)
 UID := $(shell id -u)
 GID := $(shell id -g)
-LE_NET_GW := $(shell docker network inspect localenv --format '{{range .IPAM.Config}}{{.Gateway}}{{end}}' )
+export LE_NET_GW = $(shell docker network inspect localenv --format '{{range .IPAM.Config}}{{.Gateway}}{{end}}' )
 
 docker-wrapper		:= docker run --rm -v '/var/run/docker.sock:/var/run/docker.sock' -v '${HOME}:${HOME}' localenv
 ansible-playbook	:= $(docker-wrapper) ansible-playbook
 
 ifeq (,$(shell which docker-compose))
-docker-compose := $(docker-wrapper) docker-compose
+export docker-compose = $(docker-wrapper) docker-compose
 else
-docker-compose := $(shell which docker-compose)
+export docker-compose = $(shell which docker-compose)
 endif
 ifeq (,$(shell which ansible-playbook))
-ansible-playbook := $(docker-wrapper) ansible-playbook
+export ansible-playbook = $(docker-wrapper) ansible-playbook
 else
-ansible-playbook := $(shell which ansible-playbook)
+export ANSIBLE_DISPLAY_SKIPPED_HOSTS = false
+export ansible-playbook = $(shell which ansible-playbook)
 endif
 ifeq (,$(shell which rsync))
-rsync := $(docker-wrapper) rsync
+export rsync = $(docker-wrapper) rsync
 else
-rsync := $(shell which rsync)
+export rsync = $(shell which rsync)
 endif
 ifeq (,$(shell which git))
-git := $(docker-wrapper) git
+export git = $(docker-wrapper) git
 else
-git := $(shell which git)
+export git = $(shell which git)
 endif
 
 
@@ -65,8 +66,6 @@ else
 DOCKER_GID :=$(shell getent group docker|cut -d: -f3)
 endif
 
-
-
 .PHONY: deploy
 
 deploy:
@@ -79,5 +78,5 @@ deploy-localenv:
 	@$(MAKE) deploy-dev-localenv
 
 install: deploy render deploy-localenv
-export
+
 -include ./Makefile.deploy

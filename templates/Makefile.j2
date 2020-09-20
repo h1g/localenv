@@ -1,5 +1,5 @@
 {{ project_name }}-images-pull:
-	@$(docker-compose) -f {{ service_dir }}/docker-compose.yml pull
+	@$(docker_compose) -f {{ service_dir }}/docker-compose.yml pull
 {{ project_name }}-up:
 	@$(docker-compose) -f {{ service_dir }}/docker-compose.yml up -d
 {{ project_name }}-down:
