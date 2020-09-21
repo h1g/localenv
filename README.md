@@ -37,7 +37,7 @@ sudo dseditgroup -o edit -a ${USER} -t user wheel
 #Разрешаем группе whell редактировать файл /etc/hosts
 sudo chmod 664 /etc/hosts
 ```
-#### Windows(wsl2)
+#### Windows
 ```shell
 #Разрешаем текущему пользователю редактировать
 #файл: %SYSTEMROOT%\System32\drivers\etc\hosts
