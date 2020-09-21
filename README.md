@@ -115,11 +115,11 @@ make deploy-example-laravel
 ##### После развертывания проекта, если сервис предполагает http доcтуп, он доступен по адресу:
 http://repo_name.project.localenv
 
-например, для проекта laravel, laravel микросервис будет доступен по данному урлу:
+например, для проекта example, laravel микросервис будет доступен по данному урлу:
 
 http://laravel.example.localenv
 
-а docs микросервис, для проекта laravel, будет доступен по данному урлу:
+а docs микросервис, для проекта example, будет доступен по данному урлу:
 
 http://docs.example.localenv
 
