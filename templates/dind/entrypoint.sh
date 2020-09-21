@@ -9,7 +9,7 @@ cleanup
 
 format="{{.NetworkSettings.Networks.localenv.IPAddress}} {{ join .NetworkSettings.Networks.localenv.Aliases \" \"}}"
 [ "$(grep -c host.docker.internal /etc/hosts)" -eq 0 ] && format="127.0.0.1 {{ join .NetworkSettings.Networks.localenv.Aliases \" \"}}"
-
+tail -c1 /etc/hosts.docker | read -r _ || echo >> /etc/hosts.docker
 { echo "#Localenv hosts records"; grep -w host.docker.internal /etc/hosts; docker inspect --format "${format}" $(docker ps --format {{.ID}})|awk '{if (NF>1 && $1!="<no") print $0}'; } >> /etc/hosts.docker
 
 docker events --filter 'event=start' --filter 'event=stop' --format '{{.Status}} {{.ID}} {{.Actor.Attributes.name}}'|while read -r -a info;

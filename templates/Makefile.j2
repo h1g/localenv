@@ -6,7 +6,7 @@
 	@$(docker-compose) -f {{ service_dir }}/docker-compose.yml down
 {{ project_name }}-restart:  {{ project_name }}-down  {{ project_name }}-up
 
-{{ project_name }}-deploy:	{{ project_name }}-deploy-render{% if tech != 'service' %}	{{ project_name }}-deploy-sources{% endif %}{% if configs %}	{{ project_name }}-deploy-configs{% endif %}{% if 'cli' in services %}	{{ project_name }}-deploy-build{% else %}	{{ project_name }}-up{% endif %}
+{{ project_name }}-deploy:	{{ project_name }}-deploy-render{% if tech != 'service' %}	{{ project_name }}-deploy-sources{% endif %}{% if configs %}	{{ project_name }}-deploy-configs{% endif %}	{{ project_name }}-deploy-build	{{ project_name }}-up
 
 {{ project_name }}-deploy-render:
 	@$(docker-compose) -f {{ service_dir }}/docker-compose.yml ps -q|wc -l|grep -qv 0 && $(docker-compose) -f {{ service_dir }}/docker-compose.yml down --remove-orphans || true
@@ -45,14 +45,17 @@ else
 	@$(ansible-playbook) -i {{ playbook_dir }}/inventory {{ playbook_dir }}/configs.yml --extra-vars='project={{ project }} repo_name={{ repo_name }} configs_branch={{ config_parent }}'
 endif
 {% endif %}
-{% if 'cli' in services %}
+{{ project_name }}-deploy-build:	{{ project_name }}-deploy-build-images{% if 'cli' in services %} {{ project_name }}-deploy-build-app{% endif %}
 
-{{ project_name }}-deploy-build:
+{{ project_name }}-deploy-build-images:
+	@$(docker-compose) -f {{ service_dir }}/docker-compose.yml down
+	@$(docker-compose) -f {{ service_dir }}/docker-compose.yml build
+
+{% if 'cli' in services %}
+{{ project_name }}-deploy-build-app:
 {% if tech in cache_dirs.keys() %}
 	@mkdir -p {{ cache_dirs[tech]|regex_replace('^.*:(.*)$','\\1') }}
 {% endif %}
-	@$(docker-compose) -f {{ service_dir }}/docker-compose.yml down
-	@$(docker-compose) -f {{ service_dir }}/docker-compose.yml build
 	@$(docker-compose) -f {{ service_dir }}/docker-compose.yml up -d {{ project_name }}-cli
 	@docker exec {{ project_name }}-cli /build.sh
 	@$(docker-compose) -f {{ service_dir }}/docker-compose.yml up -d

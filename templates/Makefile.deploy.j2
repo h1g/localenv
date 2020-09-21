@@ -9,6 +9,10 @@ deploy-{{ project_name }}: bootstrap-{{ project_name }}
 bootstrap-{{ project_name }}:
 	@test -d {{ service_dir }} || mkdir -p {{ service_dir }}
 	@test -f {{ service_dir }}/Makefile || $(ansible-playbook) -i {{ playbook_dir }}/inventory {{ playbook_dir }}/localenv.yml --extra-vars='project={{ project }} repo_name={{ repo_name }}'
+rebootstrap-{{ project_name }}:
+	@mkdir -p {{ service_dir }}
+	@$(ansible-playbook) -i {{ playbook_dir }}/inventory {{ playbook_dir }}/localenv.yml --extra-vars='project={{ project }} repo_name={{ repo_name }}'
+
 -include {{ service_dir }}/Makefile
 {% endfor %}
 {% endfor %}
