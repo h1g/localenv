@@ -1,8 +1,9 @@
 ### Универсальное локальное окружение разработчика
 ---
 
-#### Зависимости для всех оперционных систем:
+#### Зависимости для всех операционных систем:
  - [docker](https://docs.docker.com/install)
+ - [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 #### Зависимости для MacOS
  - [brew](https://brew.sh/)
  - [brew shell completion](https://docs.brew.sh/Shell-Completion)
@@ -10,6 +11,8 @@
  - [wsl2](https://docs.microsoft.com/ru-ru/windows/wsl/install-win10)
  - [docker wsl2 backend](https://docs.docker.com/docker-for-windows/wsl/)
  - [windows terminal](https://docs.microsoft.com/en-us/windows/terminal/)
+#### Зависимости для Linux(Ubuntu 18.04)
+ - [make](https://www.howtoinstall.me/ubuntu/18-04/make/)
 ### Подготовка к развертыванию:
 ### Для всех оперционных систем:
 ```shell
@@ -26,8 +29,6 @@ sudo usermod -aG docker ${USER}
 # Подключаем текущего пользователя к группе docker,
 # но лучше перезагузить пэвм, или перелогинится в систему
 newgrp docker ${USER}
-# Устанавливаем make и git
-sudo apt install -y make git
 ```
 #### MacOS
 ```shell
@@ -38,8 +39,10 @@ sudo chmod 664 /etc/hosts
 ```
 #### Windows(wsl2)
 ```shell
-#Разрешаем тукущему пользователю редактировать файл \drivers\etc\hosts
-#Выполнять надо в cmd запущенном с правами администратора(runas)
+#Разрешаем текущему пользователю редактировать
+#файл: %SYSTEMROOT%\System32\drivers\etc\hosts
+#Выполнять надо в хост системе в интерпритаторе cmd,
+#запущенном с правами администратора
 cacls %SYSTEMROOT%\System32\drivers\etc\hosts /e /p %username%:
 ```
 
