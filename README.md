@@ -43,7 +43,7 @@ sudo chmod 664 /etc/hosts
 #файл: %SYSTEMROOT%\System32\drivers\etc\hosts
 #Выполнять надо в хост системе в интерпритаторе cmd,
 #запущенном с правами администратора
-cacls %SYSTEMROOT%\System32\drivers\etc\hosts /e /p %username%:
+cacls %SYSTEMROOT%\System32\drivers\etc\hosts /e /p %username%:w
 ```
 
 #### Сценарий развертывания локального окружения разработчика:
