@@ -14,7 +14,7 @@
 #### Зависимости для Linux(Ubuntu 18.04)
  - [make](https://www.howtoinstall.me/ubuntu/18-04/make/)
 ### Подготовка к развертыванию:
-### Для всех оперционных систем:
+### Для всех операционных систем:
 ```shell
 # Создаем ssh ключи (с пустой passphrase)
 ssh-keygen
@@ -41,8 +41,10 @@ sudo chmod 664 /etc/hosts
 ```shell
 #Разрешаем текущему пользователю редактировать
 #файл: %SYSTEMROOT%\System32\drivers\etc\hosts
-#Выполнять надо в хост системе в интерпритаторе cmd,
-#запущенном с правами администратора
+#Выполнять надо:
+# - в хост системе(windows)
+# - в интерпритаторе cmd
+# - cmd должены быть запущенном с правами администратора
 cacls %SYSTEMROOT%\System32\drivers\etc\hosts /e /p %username%:w
 ```
 
