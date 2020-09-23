@@ -80,12 +80,12 @@ make install
 5. Репозиторий с исходным кодом конфигов проекта доступен
    по урл: https://gitlab.tld/project/configs/repo_name
 6. После развертывания мироксервис будет доступен по урл как из хост системы,
-   так и для других микросервисов: http://repo_name.project.localenv
+   так и для других микросервисов: http://repo_name-project.localenv
 7. Внутри микросервиса - сервисы доступны по коротким именам,
    например: reids,mysql,fpm,nginx,cli
 8. Сервисы стороннего микросервиса будут доступны по полным именам,
-    например: nginx.docs.example.localenv, example-docs-nginx,
-              example-laravel-mysql, mysql.laravel.example.localenv
+    например: nginx-docs-example.localenv, example-docs-nginx,
+              example-laravel-mysql, mysql-laravel-example.localenv
 9. Любое умолчание можно переопределить как на уровне проекта, так и на уровне микросервиса
 ```
 

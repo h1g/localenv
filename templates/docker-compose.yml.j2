@@ -21,9 +21,9 @@ services:
       localenv:
         aliases:
           - {{ project_name }}-{{ service }}
-          - {{ service }}.{{ repo_name }}.{{ project }}.{{ tld_default }}
+          - {{ service }}-{{ repo_name }}-{{ project }}.{{ tld_default }}
 {% if service == 'nginx' %}
-          - {{ repo_name }}.{{ project }}.{{ tld_default }}
+          - {{ repo_name }}-{{ project }}.{{ tld_default }}
 {% endif %}
 {% endfor %}
 {% if persistent_volumes|length > 0  %}
