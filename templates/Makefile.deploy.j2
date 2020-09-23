@@ -4,15 +4,13 @@
 {% for repo_name in project_data.keys() if project_data[repo_name] is mapping %}
 {% set project_name  = project + '-' + repo_name %}
 {% set service_dir   = services_dir + '/' + project_name %}
-deploy-{{ project_name }}: bootstrap-{{ project_name }}
+deploy-{{ project_name }}: {{ project_name }}-deploy-bootstrap
 	@make -C {{ service_dir }} {{ project_name }}-deploy
-bootstrap-{{ project_name }}:
-	@test -d {{ service_dir }} || mkdir -p {{ service_dir }}
-	@test -f {{ service_dir }}/Makefile || $(ansible-playbook) -i {{ playbook_dir }}/inventory {{ playbook_dir }}/localenv.yml --extra-vars='project={{ project }} repo_name={{ repo_name }}'
-rebootstrap-{{ project_name }}:
+{{ project_name }}-deploy-bootstrap:
+	@test -f {{ service_dir }}/Makefile || make {{ project_name }}-bootstrap-force
+{{ project_name }}-deploy-bootstrap-force:
 	@mkdir -p {{ service_dir }}
 	@$(ansible-playbook) -i {{ playbook_dir }}/inventory {{ playbook_dir }}/localenv.yml --extra-vars='project={{ project }} repo_name={{ repo_name }}'
-
 -include {{ service_dir }}/Makefile
 {% endfor %}
 {% endfor %}

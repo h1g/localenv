@@ -8,11 +8,19 @@ cli:
     - '{{ source_dir }}:/var/www'
     - '{{ home_dir }}/.ssh/:{{ home_dir }}/.ssh/'
     - '{{ home_dir }}/.gitconfig:{{ home_dir }}/.gitconfig'
+{% if lookup('env','SSH_AGENT_PID') is defined %}
+    - ${SSH_AUTH_SOCK}:${SSH_AUTH_SOCK}
+{% endif %}
 {% if configs %}
     - {{ config_dir }}:{{ config_dir }}
 {% endif %}
 {% if  cache_dirs[tech] is defined %}
     - {{ cache_dirs[tech] }}
+{% endif %}
+{% if lookup('env','SSH_AGENT_PID') is defined %}
+  environment:
+    - SSH_AGENT_PID
+    - SSH_AUTH_SOCK
 {% endif %}
   command: [ "bash" ]
 {% for service in services.keys() if not (service in ['nginx','cli'] or (lookup('template', playbook_dir + '/templates/primitives/' + service + '.yml.j2')|from_yaml)[service]['image']|default(services[service]['image']) ==  cli_image + '_' + project + '_' + repo_name) %}

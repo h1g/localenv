@@ -13,7 +13,11 @@ export UID := $(shell id -u)
 export GID := $(shell id -g)
 export LE_NET_GW = $(shell docker network inspect localenv --format '{{range .IPAM.Config}}{{.Gateway}}{{end}}' )
 
-docker-wrapper := docker run --rm -v '/var/run/docker.sock:/var/run/docker.sock' -v '${HOME}:${HOME}' localenv
+docker-wrapper :=docker run --rm -v '/var/run/docker.sock:/var/run/docker.sock' -v '${HOME}:${HOME}'
+ifdef SSH_AUTH_SOCK
+docker-wrapper +=-e SSH_AUTH_SOCK=${SSH_AUTH_SOCK} -e SSH_AGENT_PID=${SSH_AGENT_PID}
+endif
+docker-wrapper +=localenv
 
 ifeq (,$(shell which docker-compose))
 export docker-compose = $(docker-wrapper) docker-compose
