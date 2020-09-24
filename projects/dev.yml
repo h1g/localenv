@@ -1,5 +1,0 @@
-localenv:
-  tech: 'service'
-  services:
-    dind:
-    leproxy:
