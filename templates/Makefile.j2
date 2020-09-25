@@ -8,7 +8,6 @@
 
 {{ project_name }}-deploy:	{{ project_name }}-deploy-render{% if tech != 'service' %}	{{ project_name }}-deploy-sources{% endif %}{% if configs %}	{{ project_name }}-deploy-configs{% endif %}	{{ project_name }}-deploy-build	{{ project_name }}-up
 
-
 {{ project_name }}-deploy-render:
 	@$(docker-compose) -f {{ service_dir }}/docker-compose.yml ps -q|wc -l|grep -qv 0 && $(docker-compose) -f {{ service_dir }}/docker-compose.yml down --remove-orphans || true
 	@$(ansible-playbook) -i {{ playbook_dir }}/inventory {{ playbook_dir }}/localenv.yml --extra-vars='project={{ project }} repo_name={{ repo_name }}'

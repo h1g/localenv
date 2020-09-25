@@ -1,3 +1,4 @@
+{% set volumes = {} %}
 version: '3.6'
 services:
 {% for service in services.keys()|sort %}
@@ -12,7 +13,20 @@ services:
       network: host
 {% set service_data = service_data|combine({'image': service_data['image'] + '_' + project + '_' + repo_name}) %}
 {% endif %}
-{{ service_data|to_nice_yaml|indent(4,true) }}
+{{ service_data|dict2items|reject('search','volumes')|flatten|items2dict|to_nice_yaml|indent(4,true) }}
+{%- set  service_volumes = service_data['volumes']|default('') %}
+{% for volume in service_volumes %}
+{% if loop.index == 1 %}
+    volumes:
+{% endif %}
+{% if volume is search(':') %}
+    - {{ volume }}
+{% else %}
+{% set volume_key = project + '-'  + repo_name + '-' + service + volume|replace('/','-') %}
+{% if volumes.update({volume_key: volume}) %}{% endif %}
+    - {{ volume_key }}:{{ volume }}
+{% endif %}
+{% endfor %}
     restart: always
     networks:
       default:
@@ -22,16 +36,18 @@ services:
         aliases:
           - {{ project_name }}-{{ service }}
           - {{ service }}-{{ repo_name }}-{{ project }}.{{ tld_default }}
+          - {{ service }}.{{ repo_name }}.{{ project }}.{{ tld_default }}
 {% if service == 'nginx' %}
           - {{ repo_name }}-{{ project }}.{{ tld_default }}
+          - {{ repo_name }}.{{ project }}.{{ tld_default }}
 {% endif %}
 {% endfor %}
-{% if persistent_volumes|length > 0  %}
+{% for volume in volumes.keys()|sort %}
+{% if loop.index == 1 %}
 volumes:
-{% for volume in persistent_volumes %}
-  {{ project + '-' + repo_name + '-' + volume|replace('/','-') }}:
-{% endfor %}
 {% endif %}
+  {{ volume + ':' }}
+{% endfor %}
 networks:
   localenv:
     external:

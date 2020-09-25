@@ -30,12 +30,6 @@
       set_fact:
         services: "{{ services_primitives|combine(services,recursive=True) }}"
 
-    - name: "Generate persistent_volumes list"
-      set_fact:
-        persistent_volumes: "{{ persistent_volumes|default([]) + item.value['volumes']|flatten|reject('search',':')|map('regex_replace','(.*)',item.key + '\\1')|list  }}"
-      when: item.value['volumes'] is defined
-      loop: "{{ services|dict2items }}"
-
     - name: "Load templates filetree"
       set_fact:
         templates_filetree:  "{{ lookup('filetree',playbook_dir + '/templates/',wantlist=True)|reject('search','primitives|Makefile.deploy.j2')|list }}"
