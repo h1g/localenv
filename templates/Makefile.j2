@@ -68,7 +68,7 @@ endif
 {% if 'cli' in services %}
 {{ project_name }}-deploy-build-app:
 {% if tech in cache_dirs.keys() %}
-	@mkdir -p {{ cache_dirs[tech]|regex_replace('^.*:(.*)$','\\1') }}
+	@mkdir -p {{ cache_dirs[tech]|regex_replace('\\:.*','') }}
 {% endif %}
 	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml up -d {{ project_name }}-cli
 	@docker exec {{ project_name }}-cli /build.sh

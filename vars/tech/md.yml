@@ -1,0 +1,6 @@
+#Задаем версию ruby
+ruby_version: "2.7.1"
+#Определяем образ для cli контейнера
+cli_image: "{{ services['cli']['image']|default('ruby:' + ruby_version) }}"
+#Задаем список команд необходимых для развертывания приложения
+build_command: "gem install madness"

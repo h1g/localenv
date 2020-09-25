@@ -34,7 +34,8 @@ home_dir: "{{ lookup('env','HOME') }}"
 cache_dirs:
   npm: "{{ home_dir + '/.npm:' + home_dir + '/.npm' }}"
   php: "{{ home_dir + '/.composer:' + home_dir + '/.composer' }}"
-  ruby: "{{ home_dir + '/.bundle/' + project_name + ':' + home_dir + '/.gem' }}"
+  ruby: "{{ home_dir + '/.bundle/' + ruby_version + ':' + home_dir + '/.gem' }}"
+  md: "{{ home_dir + '/.bundle/' + ruby_version + ':' + home_dir + '/.gem' }}"
 
 #Основной сервер хранения исходного кода проектов
 source_server: "git@github.com:"

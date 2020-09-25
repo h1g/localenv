@@ -45,8 +45,11 @@ laravel:
 docs:
   source_repo: 'https://github.com/laravel/docs.git'
   source_branch: 'master'
-  tech: 'html'
+  build_command: 'gem install madness'
+  tech: 'md'
   services:
+    cli:
+    madness:
     nginx:
       volumes:
         - '{{ source_dir }}:/var/www/public'

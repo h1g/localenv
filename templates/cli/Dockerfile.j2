@@ -60,9 +60,13 @@ ENV NPM_CONFIG_LOGLEVEL info
 RUN npm install -g gulp-cli
 RUN npm install -g npm-cli-login
 {% endif %}
-
+{% if tech == 'md' %}
+#Секция для технологии: md
+ENV GEM_HOME=$HOME/.gem
+ENV GEM_PATH=$HOME/.gem
+ENV PATH=$PATH':/home/{{ ansible_user }}/.gem/bin/'
+{% endif %}
 COPY ./build.sh /build.sh
-
 RUN chmod +x /build.sh
 
 WORKDIR /var/www
