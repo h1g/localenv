@@ -1,6 +1,6 @@
 projects/*
-!projects/dev.yml
-!projects/laravel.yml
+!projects/localenv.yml
+!projects/example.yml
 services/*
 sources/*
 configs/*
