@@ -13,14 +13,13 @@ tld_default: "localenv"
 #Получаем имя пользователя из-под которого запущен плейбук
 ansible_user: "{{ lookup('env','USER') }}"
 #Получаем идетификатор основной группы пользователя из-под которого запущен плейбук
-ansible_user_gid: "{{ lookup('pipe','id -g ' + ansible_user ) }}"
+ansible_user_gid: "{{ lookup('pipe','id -g ' + ansible_user) }}"
 #Получаем идентификатор пользователя из-под которого запущен плейбук
-ansible_user_uid: "{{ lookup('pipe','id -u ' + ansible_user ) }}"
+ansible_user_uid: "{{ lookup('pipe','id -u ' + ansible_user) }}"
+#Получаем идетификатор docker группы
+docker_gid: "{{ lookup('pipe','stat -c%g /var/run/docker.sock') }}"
 #Получаем тип операционной системы пользователя
 os_name: "{{ lookup('env','OS_NAME') }}"
-
-#Задаем значение по умлочнаю для списка постоянных томов
-persistent_volumes: []
 
 #Задаем значение по умлочнаю для словаря примитивов docker-compose сервисов
 services_primitives: {}

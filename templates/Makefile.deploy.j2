@@ -10,7 +10,7 @@ deploy-{{ project_name }}: {{ project_name }}-deploy-bootstrap
 	@test -f {{ service_dir }}/Makefile || make {{ project_name }}-deploy-bootstrap-force
 {{ project_name }}-deploy-bootstrap-force:
 	@mkdir -p {{ service_dir }}
-	@$(ansible-playbook) -i {{ playbook_dir }}/inventory {{ playbook_dir }}/localenv.yml --extra-vars='project={{ project }} repo_name={{ repo_name }}'
+	@$(docker-boptstrap) ansible-playbook -i {{ playbook_dir }}/inventory {{ playbook_dir }}/localenv.yml --extra-vars='project={{ project }} repo_name={{ repo_name }}'
 -include {{ service_dir }}/Makefile
 {% endfor %}
 {% endfor %}

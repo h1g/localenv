@@ -1,64 +1,78 @@
+{% if project_name != 'localenv-core' %}
+ifeq (,$(shell docker inspect localenv-core-runner |grep running))
+{% endif %}
+docker-wrapper   :=docker run --rm -v '/var/run/docker.sock:/var/run/docker.sock' -v '${HOME}:${HOME}'
+ifdef SSH_AUTH_SOCK
+docker-wrapper +=-e SSH_AUTH_SOCK=${SSH_AUTH_SOCK} -e SSH_AGENT_PID=${SSH_AGENT_PID}
+endif
+export docker-wrapper +=localenv
+{% if project_name != 'localenv-core' %}
+else
+export docker-wrapper :=docker exec localenv-core-runner
+endif
+{% endif %}
+
 {{ project_name }}-images-pull:
-	@$(docker_compose) -f {{ service_dir }}/docker-compose.yml pull
+	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml pull
 {{ project_name }}-up:
-	@$(docker-compose) -f {{ service_dir }}/docker-compose.yml up -d
+	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml up -d
 {{ project_name }}-down:
-	@$(docker-compose) -f {{ service_dir }}/docker-compose.yml down
+	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml down
 {{ project_name }}-restart:  {{ project_name }}-down  {{ project_name }}-up
 
 {{ project_name }}-deploy:	{{ project_name }}-deploy-render{% if tech != 'service' %}	{{ project_name }}-deploy-sources{% endif %}{% if configs %}	{{ project_name }}-deploy-configs{% endif %}	{{ project_name }}-deploy-build	{{ project_name }}-up
 
 {{ project_name }}-deploy-render:
-	@$(docker-compose) -f {{ service_dir }}/docker-compose.yml ps -q|wc -l|grep -qv 0 && $(docker-compose) -f {{ service_dir }}/docker-compose.yml down --remove-orphans || true
-	@$(ansible-playbook) -i {{ playbook_dir }}/inventory {{ playbook_dir }}/localenv.yml --extra-vars='project={{ project }} repo_name={{ repo_name }}'
+	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml ps -q|wc -l|grep -qv 0 && $(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml down --remove-orphans || true
+	@$(docker-wrapper) ansible-playbook -i {{ playbook_dir }}/inventory {{ playbook_dir }}/localenv.yml --extra-vars='project={{ project }} repo_name={{ repo_name }}'
 
 {% if tech != 'service' %}
 {{ project_name }}-deploy-sources:
 ifneq ($(wildcard {{ source_dir + '/.git' }}),)
-	@$(git) -C {{ source_dir }} pull origin {{ source_branch }}
-	@$(git) -C {{ source_dir }} checkout {{ source_branch }}
+	@$(docker-wrapper) git -C {{ source_dir }} pull origin {{ source_branch }}
+	@$(docker-wrapper) git -C {{ source_dir }} checkout {{ source_branch }}
 else
-	@$(git) clone --branch {{ source_branch }} {{ source_repo }} {{ source_dir }}
+	@$(docker-wrapper) git clone --branch {{ source_branch }} {{ source_repo }} {{ source_dir }}
 endif
 {% endif %}
 {% if configs %}
 {{ project_name }}-deploy-configs:
 ifneq ($(wildcard {{ config_dir + '/.git' }}),)
-	@$(git) -C {{ config_dir }} pull origin {{ config_branch }}
-	@$(git) -C {{ config_dir }} checkout {{ config_branch }}
+	@$(docker-wrapper) git -C {{ config_dir }} pull origin {{ config_branch }}
+	@$(docker-wrapper) git -C {{ config_dir }} checkout {{ config_branch }}
 else
-	@$(git) clone --branch {{ config_branch }} {{ config_repo }} {{ config_dir }}
+	@$(docker-wrapper) git clone --branch {{ config_branch }} {{ config_repo }} {{ config_dir }}
 endif
 {% set configs_parent_path = config_dir + '/$(shell cat '+ config_dir + '/' + source_branch + '/.parent)/' %}
 ifneq ($(wildcard {{ config_dir + '/' + source_branch + '/.parent' }}),)
-	@$(rsync) -qav -f"+ */" -f"- *" {{ configs_parent_path }} {{ source_dir }}
+	@$(docker-wrapper) rsync -qav -f"+ */" -f"- *" {{ configs_parent_path }} {{ source_dir }}
 	@find {{ configs_parent_path }} -type f ! -name "*.j2" ! -wholename "*/vault.yml" ! -wholename "*/.parent"|sed 's|{{configs_parent_path}}||'|xargs -I file ln -sf {{configs_parent_path}}file {{ source_dir}}/file
-	@$(ansible-playbook) -i {{ playbook_dir }}/inventory {{ playbook_dir }}/configs.yml --extra-vars='project={{ project }} repo_name={{ repo_name }} configs_branch=$(shell cat {{ config_dir + '/' + source_branch + '/.parent' }})'
+	@$(docker-wrapper) ansible-playbook -i {{ playbook_dir }}/inventory {{ playbook_dir }}/configs.yml --extra-vars='project={{ project }} repo_name={{ repo_name }} configs_branch=$(shell cat {{ config_dir + '/' + source_branch + '/.parent' }})'
 endif
 ifneq ($(wildcard {{ config_dir + '/' + source_branch }}),)
-	@$(rsync) -qav -f"+ */" -f"- *" {{ config_dir + '/' + source_branch }}/ {{ source_dir }}
+	@$(docker-wrapper) rsync -qav -f"+ */" -f"- *" {{ config_dir + '/' + source_branch }}/ {{ source_dir }}
 	@find {{ config_dir + '/' + source_branch + '/' }} -type f ! -name "*.j2" ! -wholename "*/vault.yml" ! -wholename "*/.parent"|sed 's|{{config_dir + '/' + source_branch + '/'}}||'|xargs -I file ln -sf {{config_dir + '/' + source_branch + '/'}}file {{ source_dir}}/file
-	@$(ansible-playbook) -i {{ playbook_dir }}/inventory {{ playbook_dir }}/configs.yml --extra-vars='project={{ project }} repo_name={{ repo_name }} configs_branch={{ source_branch }}'
+	@$(docker-wrapper) ansible-playbook -i {{ playbook_dir }}/inventory {{ playbook_dir }}/configs.yml --extra-vars='project={{ project }} repo_name={{ repo_name }} configs_branch={{ source_branch }}'
 else
-	@$(rsync) -qav -f"+ */" -f"- *" {{ config_dir + '/' + config_parent }}/ {{ source_dir }}
+	@$(docker-wrapper) rsync -qav -f"+ */" -f"- *" {{ config_dir + '/' + config_parent }}/ {{ source_dir }}
 	@find {{ config_dir + '/' + config_parent + '/' }} -type f ! -name "*.j2" ! -wholename "*/vault.yml" ! -wholename "*/.parent"|sed 's|{{config_dir + '/' + config_parent + '/'}}||'|xargs -I file ln -sf {{config_dir + '/' + config_parent + '/'}}file {{ source_dir}}/file
-	@$(ansible-playbook) -i {{ playbook_dir }}/inventory {{ playbook_dir }}/configs.yml --extra-vars='project={{ project }} repo_name={{ repo_name }} configs_branch={{ config_parent }}'
+	@$(docker-wrapper) ansible-playbook -i {{ playbook_dir }}/inventory {{ playbook_dir }}/configs.yml --extra-vars='project={{ project }} repo_name={{ repo_name }} configs_branch={{ config_parent }}'
 endif
 {% endif %}
 {{ project_name }}-deploy-build:	{{ project_name }}-deploy-build-images{% if 'cli' in services %} {{ project_name }}-deploy-build-app{% endif %}
 
 {{ project_name }}-deploy-build-images:
-	@$(docker-compose) -f {{ service_dir }}/docker-compose.yml down
-	@$(docker-compose) -f {{ service_dir }}/docker-compose.yml build
+	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml down
+	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml build
 
 {% if 'cli' in services %}
 {{ project_name }}-deploy-build-app:
 {% if tech in cache_dirs.keys() %}
 	@mkdir -p {{ cache_dirs[tech]|regex_replace('^.*:(.*)$','\\1') }}
 {% endif %}
-	@$(docker-compose) -f {{ service_dir }}/docker-compose.yml up -d {{ project_name }}-cli
+	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml up -d {{ project_name }}-cli
 	@docker exec {{ project_name }}-cli /build.sh
-	@$(docker-compose) -f {{ service_dir }}/docker-compose.yml up -d
+	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml up -d
 {{ project_name }}-exec:
 	@docker exec -ti {{ project_name }}-cli bash -l
 {% endif %}

@@ -1,4 +1,4 @@
-FROM docker:latest
+FROM alpine:latest
 
 RUN apk -u add bash mc make git rsync docker-compose ansible shadow
 

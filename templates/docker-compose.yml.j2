@@ -6,7 +6,8 @@ services:
   {{ project_name }}-{{ service }}:
     container_name: {{ project_name }}-{{ service }}
     hostname: {{ project_name }}-{{ service }}
-{% if (playbook_dir + '/templates/' + service + '/Dockerfile.j2') is file %}
+{% set service_dockerfile = playbook_dir + '/templates/' + service + '/Dockerfile' %}
+{% if ((service_dockerfile is file) or ((service_dockerfile + '.j2') is file)) %}
     build:
       context: ./{{ service }}/
       dockerfile: Dockerfile
