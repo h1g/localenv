@@ -1,0 +1,22 @@
+runner:
+  image: 'dind:latest'
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - ${HOME}:${HOME}
+{% if lookup('env','SSH_AGENT_PID') is defined %}
+    - ${SSH_AUTH_SOCK}:${SSH_AUTH_SOCK}
+{% endif %}
+  environment:
+{% if lookup('env','SSH_AGENT_PID') is defined %}
+    - SSH_AGENT_PID
+    - SSH_AUTH_SOCK
+{% endif %}
+    - HOME
+    - USER
+    - UID
+    - GID
+    - PWD
+    - DOCKER_GID
+  stdin_open: true
+  tty: true
+  command: [ "bash" ]

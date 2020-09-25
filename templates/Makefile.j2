@@ -71,6 +71,10 @@ endif
 {{ project_name }}-exec-workers:
 	@docker exec -ti {{ project_name }}-workers bash -l
 {% endif %}
+{% if 'runner' in services %}
+{{ project_name }}-exec-runner:
+	@docker exec -ti {{ project_name }}-runner bash -l
+{% endif %}
 {% if 'fpm' in services %}
 {{ project_name }}-exec-fpm:
 	@docker exec -ti {{ project_name }}-fpm bash -l

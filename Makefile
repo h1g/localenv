@@ -43,6 +43,7 @@ endif
 
 
 ifeq ($(OS_NAME),linux)
+DOCKER_GID :=$(shell getent group docker|cut -d: -f3)
 ifdef WSL_DISTRO_NAME
 export OS_NAME := "wsl"
 endif
@@ -65,8 +66,6 @@ ifeq (,$(shell stat -f %A /etc/hosts|grep 664))
 endif
 $(shell sed -i~ 's/"credsStore" : "desktop"/"credStore" : "osxkeychain"/g' ~/.docker/config.json)
 DOCKER_GID := "0"
-else
-DOCKER_GID :=$(shell getent group docker|cut -d: -f3)
 endif
 
 .PHONY: deploy

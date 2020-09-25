@@ -16,6 +16,7 @@ ENV PY_COLORS=1
 ENV ANSIBLE_FORCE_COLOR=1
 ENV USER=$USER
 ENV OS_NAME=$OS_NAME
+ENV DOCKER_GID=$DOCKER_GID
 
 RUN if [ $(getent group $GID) ]; then groupmod -n $USER -g $GID $(getent group $GID|cut -d ":" -f1); \
     else groupadd --gid $GID $USER; fi
