@@ -18,5 +18,5 @@ RUN if [ $(getent group {{ docker_gid }}) ]; then groupmod -n docker -g {{ docke
     else groupadd --gid {{ docker_gid }} docker; fi
 RUN usermod -aG docker {{ ansible_user }}
 USER {{ ansible_user }}
-WORKDIR {{ lookup('env','PWD') }}
+WORKDIR {{ playbook_dir }}
 CMD /bin/bash
