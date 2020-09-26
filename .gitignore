@@ -7,4 +7,3 @@ configs/*
 *.retry
 .vscode
 .idea
-Makefile.deploy

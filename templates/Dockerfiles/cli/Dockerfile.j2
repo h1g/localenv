@@ -54,20 +54,22 @@ RUN for i in {{ php_modules|default(php_modules_default)|join(' ') }}; do \
 RUN rm -rf /tmp/pear
 {% endif %}
 {% endif %}
+
+COPY ./build.sh /build.sh
+RUN chmod +x /build.sh
+
+WORKDIR /var/www
+USER {{ ansible_user }}
+{% if tech in ['ruby','md'] %}
+#Секция для технологий: ruby и md
+ENV GEM_HOME=/home/{{ ansible_user }}/.gem
+ENV GEM_PATH=/home/{{ ansible_user }}/.gem
+ENV PATH=$PATH':/home/{{ ansible_user }}/.gem/bin/'
+{% endif %}
+
 {% if tech == 'nodejs' %}
 #Секция для технологии: nodejs
 ENV NPM_CONFIG_LOGLEVEL info
 RUN npm install -g gulp-cli
 RUN npm install -g npm-cli-login
 {% endif %}
-{% if tech == 'md' %}
-#Секция для технологии: md
-ENV GEM_HOME=$HOME/.gem
-ENV GEM_PATH=$HOME/.gem
-ENV PATH=$PATH':/home/{{ ansible_user }}/.gem/bin/'
-{% endif %}
-COPY ./build.sh /build.sh
-RUN chmod +x /build.sh
-
-WORKDIR /var/www
-USER {{ ansible_user }}
