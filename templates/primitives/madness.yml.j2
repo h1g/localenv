@@ -1,13 +1,12 @@
-madness:
-  image: "{{ cli_image + '_' + project + '_' + repo_name }}"
-  volumes:
-    - '{{ source_dir }}:/docs'
+image: "{{ cli_image + '_' + project + '_' + repo_name }}"
+volumes:
+  - '{{ source_dir }}:/docs'
 {% if configs %}
-    - {{ config_dir }}:{{ config_dir }}
+  - {{ config_dir }}:{{ config_dir }}
 {% endif %}
 {% if  cache_dirs[tech] is defined %}
-    - {{ cache_dirs[tech] }}
+  - {{ cache_dirs[tech] }}
 {% endif %}
-  command: ["madness"]
-  depends_on:
-    - {{ project_name }}-cli
+command: ["madness"]
+depends_on:
+  - {{ project_name }}-cli

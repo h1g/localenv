@@ -1,8 +1,7 @@
-ftp:
-  image: 'bogem/ftp:latest'
-  environment:
-    - FTP_USER=ftp
-    - FTP_PASS=ftp
-    - PASV_ADDRESS=0.0.0.0
-  volumes:
-    - /home/vsftpd
+image: 'bogem/ftp:latest'
+environment:
+  - FTP_USER=ftp
+  - FTP_PASS=ftp
+  - PASV_ADDRESS=0.0.0.0
+volumes:
+  - /home/vsftpd

@@ -1,8 +1,7 @@
-proxy:
-  image: 'nginx:latest'
+image: 'nginx:latest'
 {% if os_name != "linux" %}
-  ports:
-    - "80:80"
+ports:
+  - "80:80"
 {% endif %}
-  depends_on:
-    - {{ project_name }}-dns
+depends_on:
+  - {{ project_name }}-dns

@@ -1,8 +1,7 @@
-nginx:
-  image: 'nginx:latest'
-  volumes:
-    - '{{ source_dir }}:/var/www'
+image: 'nginx:latest'
+volumes:
+  - '{{ source_dir }}:/var/www'
 {% if 'cli' in services.keys() %}
-  depends_on:
-    - {{ project_name }}-cli
+depends_on:
+  - {{ project_name }}-cli
 {% endif %}

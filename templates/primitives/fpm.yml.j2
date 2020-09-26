@@ -1,19 +1,18 @@
-fpm:
-  image: "{{ cli_image + '_' + project + '_' + repo_name }}"
+image: "{{ cli_image + '_' + project + '_' + repo_name }}"
 {% if os_name == 'linux' %}
-  extra_hosts:
-    - "host.docker.internal:{{ lookup('env','LE_NET_GW') }}"
+extra_hosts:
+  - "host.docker.internal:{{ lookup('env','LE_NET_GW') }}"
 {% endif %}
-  volumes:
-    - '{{ source_dir }}:/var/www'
-    - '{{ home_dir }}/.ssh/:{{ home_dir }}/.ssh/'
-    - '{{ home_dir }}/.gitconfig:{{ home_dir }}/.gitconfig'
+volumes:
+  - '{{ source_dir }}:/var/www'
+  - '{{ home_dir }}/.ssh/:{{ home_dir }}/.ssh/'
+  - '{{ home_dir }}/.gitconfig:{{ home_dir }}/.gitconfig'
 {% if configs %}
-    - {{ config_dir }}:{{ config_dir }}
+  - {{ config_dir }}:{{ config_dir }}
 {% endif %}
 {% if  cache_dirs[tech] is defined %}
-    - {{ cache_dirs[tech] }}
+  - {{ cache_dirs[tech] }}
 {% endif %}
-  command: ["php-fpm", "--nodaemonize"]
-  depends_on:
-    - {{ project_name }}-cli
+command: ["php-fpm", "--nodaemonize"]
+depends_on:
+  - {{ project_name }}-cli
