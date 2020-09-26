@@ -12,17 +12,18 @@ RUN locale-gen en_US.UTF-8
 #Создание идентичного пользователя из-под которого запущен плейбук
 RUN if [ $(getent group {{ ansible_user_gid }}) ]; then groupmod -n {{ ansible_user }} -g {{ ansible_user_gid }} $(getent group {{ ansible_user_gid }}|cut -d ":" -f1); \
     else groupadd --gid {{ ansible_user_gid }} {{ ansible_user }}; fi
+RUN dirname {{ home_dir }} | xargs mkdir -p
 RUN if [ $(getent passwd {{ ansible_user_uid }}) ]; then usermod -d {{ home_dir }} -s /bin/bash -l {{ ansible_user }} -u  {{ ansible_user_uid }} -g  {{ ansible_user_gid }} $(getent passwd {{ ansible_user_uid }}|cut -d ":" -f1); mkhomedir_helper {{ ansible_user }}; \
     else useradd -m --home {{ home_dir }} -s /bin/bash {{ ansible_user }} --uid  {{ ansible_user_uid }} --gid  {{ ansible_user_gid }}; fi
 RUN echo "{{ ansible_user }} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/{{ ansible_user | regex_replace('\.','')}}
 
 #Настройка пользователя и выставление нужных разрешений
 COPY ./bashrc /bashrc
-RUN cat /bashrc >> /home/{{ ansible_user }}/.bashrc && rm /bashrc
+RUN cat /bashrc >> {{ home_dir }}/.bashrc && rm /bashrc
 
 RUN mkdir -p /var/www
 RUN chown -R {{ ansible_user }}:root /var/run/ /var/log/ /opt
-RUN chown -R {{ ansible_user }}:{{ ansible_user }} /home/{{ ansible_user }} /var/www
+RUN chown -R {{ ansible_user }}:{{ ansible_user }} {{ home_dir }} /var/www
 
 {% if 'workers' in services %}
 RUN apt-get install -y supervisor
@@ -62,9 +63,9 @@ WORKDIR /var/www
 USER {{ ansible_user }}
 {% if tech in ['ruby','md'] %}
 #Секция для технологий: ruby и md
-ENV GEM_HOME=/home/{{ ansible_user }}/.gem
-ENV GEM_PATH=/home/{{ ansible_user }}/.gem
-ENV PATH=$PATH':/home/{{ ansible_user }}/.gem/bin/'
+ENV GEM_HOME={{ home_dir }}/.gem
+ENV GEM_PATH={{ home_dir }}/.gem
+ENV PATH=$PATH':{{ home_dir }}/.gem/bin/'
 {% endif %}
 
 {% if tech == 'nodejs' %}

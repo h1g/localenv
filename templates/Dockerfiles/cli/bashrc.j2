@@ -3,7 +3,7 @@ parse_git_branch() {
 }
 export PS1="\u@\h \[\e[32m\]\w \[\e[91m\]\$(parse_git_branch)\[\e[00m\]$ "
 {% if tech in ['ruby','md'] %}
-export GEM_HOME="$HOME/.gem"
-export GEM_PATH="$HOME/.gem"
-export PATH="$HOME/.gem/bin:$PATH"
+export GEM_HOME="{{ home_dir }}/.gem"
+export GEM_PATH="{{ home_dir }}/.gem"
+export PATH="{{ home_dir }}/.gem/bin:$PATH"
 {% endif %}
