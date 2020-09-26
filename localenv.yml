@@ -13,8 +13,8 @@
 
     - name: "Load tech oriented variables"
       include_vars:
-        dir: "{{ playbook_dir + '/vars/tech' }}"
-        files_matching: "{{ tech + '.yml' }}"
+        file: "{{ playbook_dir + '/vars/tech/' + tech + '.yml' }}"
+      when: (playbook_dir + '/vars/tech/' + tech + '.yml') is file
 
     - name: "Load docker-compose services primitives"
       set_fact:
@@ -30,9 +30,16 @@
       set_fact:
         services: "{{ services_primitives|combine(services,recursive=True) }}"
 
-    - name: "Load templates filetree"
+    - name: "Render Makefile and docker-compose.yml for project : {{ project }}/{{ repo_name }}"
+      template:
+        src: "{{ playbook_dir }}/templates/{{ item }}"
+        dest: "{{ service_dir }}/{{ item|regex_replace('\\.j2','') }}"
+        mode: preserve
+      loop: ['Makefile.j2','docker-compose.yml.j2']
+
+    - name: "Load Dockerfiles filetree"
       set_fact:
-        templates_filetree:  "{{ lookup('filetree',playbook_dir + '/templates/',wantlist=True)|reject('search','primitives|Makefile.deploy.j2')|list }}"
+        templates_filetree:  "{{ lookup('filetree',dockerfiles_primitives_path,wantlist=True) }}"
 
     - name: "Create docker-compose services dirs for project : {{ project }}/{{ repo_name }}"
       file:
@@ -41,9 +48,9 @@
       when: item in services.keys()
       loop: "{{ templates_filetree|selectattr('state','equalto','directory')|map(attribute='path')|list }}"
 
-    - name: "Render templateds for project : {{ project }}/{{ repo_name }}"
+    - name: "Render templates for project : {{ project }}/{{ repo_name }}"
       template:
-        src: "{{ playbook_dir }}/templates/{{ item }}"
+        src: "{{ dockerfiles_primitives_path +  item }}"
         dest: "{{ service_dir }}/{{ item|regex_replace('\\.j2','') }}"
         mode: preserve
       when: item in ['Makefile.j2','docker-compose.yml.j2'] or item|dirname in services.keys()
@@ -51,7 +58,7 @@
 
     - name: "Render files for project : {{ project }}/{{ repo_name }}"
       copy:
-        src: "{{ playbook_dir }}/templates/{{ item }}"
+        src: "{{ dockerfiles_primitives_path + item }}"
         dest: "{{ service_dir }}/{{ item }}"
         mode: preserve
       when: item|dirname in services.keys()

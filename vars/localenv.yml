@@ -24,8 +24,11 @@ os_name: "{{ lookup('env','OS_NAME') }}"
 #Задаем значение по умлочнаю для словаря примитивов docker-compose сервисов
 services_primitives: {}
 
-#Директория хранения примитивов сервисов docker-composer
-services_primitives_path: "{{ playbook_dir + '/templates/primitives/' }}"
+#Директория хранения примитивов сервисов docker-compose
+services_primitives_path: "{{ playbook_dir + '/templates/services/' }}"
+
+#Директория хранения директорий примитивов с Dockerfile для сервисов docker-compose
+dockerfiles_primitives_path: "{{ playbook_dir + '/templates/Dockerfiles/' }}"
 
 #Домашняя директория, в которой будут созданы папки для хранения кеша
 home_dir: "{{ lookup('env','HOME') }}"

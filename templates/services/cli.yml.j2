@@ -22,7 +22,7 @@ environment:
   - SSH_AUTH_SOCK
 {% endif %}
 command: [ "bash" ]
-{% for service in services.keys() if not (service in ['nginx','cli'] or (lookup('template', playbook_dir + '/templates/primitives/' + service + '.yml.j2')|from_yaml)['image']|default(services[service]['image']) ==  cli_image + '_' + project + '_' + repo_name) %}
+{% for service in services.keys() if not (service in ['nginx','cli'] or (lookup('template', playbook_dir + '/templates/services/' + service + '.yml.j2')|from_yaml)['image']|default(services[service]['image']) ==  cli_image + '_' + project + '_' + repo_name) %}
 {% if loop.index == 1 %}
 depends_on:
 {% endif %}
