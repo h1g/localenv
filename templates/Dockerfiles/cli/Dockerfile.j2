@@ -12,8 +12,8 @@ RUN locale-gen en_US.UTF-8
 #Создание идентичного пользователя из-под которого запущен плейбук
 RUN if [ $(getent group {{ ansible_user_gid }}) ]; then groupmod -n {{ ansible_user }} -g {{ ansible_user_gid }} $(getent group {{ ansible_user_gid }}|cut -d ":" -f1); \
     else groupadd --gid {{ ansible_user_gid }} {{ ansible_user }}; fi
-RUN if [ $(getent passwd {{ ansible_user_uid }}) ]; then usermod -d /home/{{ ansible_user }} -s /bin/bash -l {{ ansible_user }} -u  {{ ansible_user_uid }} -g  {{ ansible_user_gid }} $(getent passwd {{ ansible_user_uid }}|cut -d ":" -f1); mkhomedir_helper {{ ansible_user }}; \
-    else useradd -m --home /home/{{ ansible_user }} -s /bin/bash {{ ansible_user }} --uid  {{ ansible_user_uid }} --gid  {{ ansible_user_gid }}; fi
+RUN if [ $(getent passwd {{ ansible_user_uid }}) ]; then usermod -d {{ home_dir }} -s /bin/bash -l {{ ansible_user }} -u  {{ ansible_user_uid }} -g  {{ ansible_user_gid }} $(getent passwd {{ ansible_user_uid }}|cut -d ":" -f1); mkhomedir_helper {{ ansible_user }}; \
+    else useradd -m --home {{ home_dir }} -s /bin/bash {{ ansible_user }} --uid  {{ ansible_user_uid }} --gid  {{ ansible_user_gid }}; fi
 RUN echo "{{ ansible_user }} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/{{ ansible_user | regex_replace('\.','')}}
 
 #Настройка пользователя и выставление нужных разрешений
