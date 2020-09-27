@@ -19,4 +19,4 @@ RUN if [ $(getent group {{ docker_gid }}) ]; then groupmod -n docker -g {{ docke
 RUN usermod -aG docker {{ ansible_user }}
 USER {{ ansible_user }}
 WORKDIR {{ playbook_dir }}
-CMD /bin/bash
+CMD [ '/bin/bash','--norc' ]

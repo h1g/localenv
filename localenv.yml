@@ -37,26 +37,26 @@
         mode: preserve
       loop: ['Makefile.j2','docker-compose.yml.j2']
 
-    - name: "Load Dockerfiles filetree"
+    - name: "Load services Dockerfiles filetree"
       set_fact:
         templates_filetree:  "{{ lookup('filetree',dockerfiles_primitives_path,wantlist=True) }}"
 
-    - name: "Create docker-compose services dirs for project : {{ project }}/{{ repo_name }}"
+    - name: "Create Dockerfiles services dirs for project : {{ project }}/{{ repo_name }}"
       file:
         path: "{{ service_dir }}/{{ item }}"
         state: directory
       when: item in services.keys()
       loop: "{{ templates_filetree|selectattr('state','equalto','directory')|map(attribute='path')|list }}"
 
-    - name: "Render templates for project : {{ project }}/{{ repo_name }}"
+    - name: "Render Dockerfiles templates for project : {{ project }}/{{ repo_name }}"
       template:
         src: "{{ dockerfiles_primitives_path +  item }}"
         dest: "{{ service_dir }}/{{ item|regex_replace('\\.j2','') }}"
         mode: preserve
-      when: item in ['Makefile.j2','docker-compose.yml.j2'] or item|dirname in services.keys()
+      when: item|dirname in services.keys()
       loop: "{{ templates_filetree|selectattr('state','equalto','file')|map(attribute='path')|select('search','.j2')|list }}"
 
-    - name: "Render files for project : {{ project }}/{{ repo_name }}"
+    - name: "Copy Dockerfiles files for project : {{ project }}/{{ repo_name }}"
       copy:
         src: "{{ dockerfiles_primitives_path + item }}"
         dest: "{{ service_dir }}/{{ item }}"

@@ -12,92 +12,89 @@ export docker-wrapper :=docker exec localenv-core-runner
 endif
 {% endif %}
 
-playbook_dir = {{ playbook_dir }}
-project_name = {{ project_name }}
-service_dir  = {{ service_dir }}
-source_dir   = {{ source_dir }}
-config_dir   = {{ config_dir }}
+playbook_dir := {{ playbook_dir }}
+config_dir   := {{ config_dir }}
 define sync_configs
-        @$(docker-wrapper) rsync -qav -f"+ */" -f"- *" ${config_dir}/$(1)/ ${source_dir}/
-        @find ${config_dir}/$(1)/ -type f ! -name "*.j2" ! -wholename "*/vault.yml" ! -wholename "*/.parent"|sed 's|${config_dir}/$(1)/||'|xargs -I file ln -sf ${config_dir}/$(1)/file ${source_dir}/file
+        @$(docker-wrapper) rsync -qav -f"+ */" -f"- *" {{ config_dir }}/$(1)/ {{ source_dir }}/
+        @find {{ config_dir }}/$(1)/ -type f ! -name "*.j2" ! -wholename "*/vault.yml" ! -wholename "*/.parent"|sed 's|{{ config_dir }}/$(1)/||'|xargs -I file ln -sf {{ config_dir }}/$(1)/file {{ source_dir }}/file
         @$(docker-wrapper) ansible-playbook -i ${playbook_dir}/inventory ${playbook_dir}/configs.yml --extra-vars='project=example repo_name=laravel configs_branch=$(1)'
 endef
-${project_name}-images-pull:
-	@$(docker-wrapper) docker-compose -f ${service_dir}/docker-compose.yml pull
-${project_name}-up:
-	@$(docker-wrapper) docker-compose -f ${service_dir}/docker-compose.yml up -d
-${project_name}-down:
-	@$(docker-wrapper) docker-compose -f ${service_dir}/docker-compose.yml down
-${project_name}-restart:  ${project_name}-down  ${project_name}-up
+{{ project_name }}-images-pull:
+	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml pull
+{{ project_name }}-up:
+	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml up -d
+{{ project_name }}-down:
+	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml down
+{{ project_name }}-restart:  {{ project_name }}-down  {{ project_name }}-up
 
-${project_name}-deploy:	${project_name}-deploy-render{% if tech != 'service' %}	${project_name}-deploy-sources{% endif %}{% if configs %}	${project_name}-deploy-configs{% endif %}	${project_name}-deploy-build	${project_name}-up
+{{ project_name }}-deploy:	{{ project_name }}-deploy-render{% if tech != 'service' %}	{{ project_name }}-deploy-sources{% endif %}{% if configs %}	{{ project_name }}-deploy-configs{% endif %}	{{ project_name }}-deploy-build	{{ project_name }}-up
 
-${project_name}-deploy-render:
-	@$(docker-wrapper) docker-compose -f ${service_dir}/docker-compose.yml ps -q|wc -l|grep -qv 0 && $(docker-wrapper) docker-compose -f ${service_dir}/docker-compose.yml down --remove-orphans || true
+{{ project_name }}-deploy-render:
+	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml ps -q|wc -l|grep -qv 0 && $(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml down --remove-orphans || true
 	@$(docker-wrapper) ansible-playbook -i ${playbook_dir}/inventory ${playbook_dir}/localenv.yml --extra-vars='project={{ project }} repo_name={{ repo_name }}'
 
 {% if tech != 'service' %}
-${project_name}-deploy-sources:
+{{ project_name }}-deploy-sources:
 ifneq ($(wildcard {{ source_dir + '/.git' }}),)
-	@$(docker-wrapper) git -C ${source_dir} pull origin {{ source_branch }}
-	@$(docker-wrapper) git -C ${source_dir} checkout {{ source_branch }}
+	@$(docker-wrapper) git -C {{ source_dir }} pull origin {{ source_branch }}
+	@$(docker-wrapper) git -C {{ source_dir }} checkout {{ source_branch }}
 else
-	@$(docker-wrapper) git clone --branch {{ source_branch }} {{ source_repo }} ${source_dir}
+	@$(docker-wrapper) git clone --branch {{ source_branch }} {{ source_repo }} {{ source_dir }}
 endif
 {% endif %}
 {% if configs %}
-${project_name}-deploy-configs:
+{{ project_name }}-deploy-configs:
 ifneq ($(wildcard {{ config_dir + '/.git' }}),)
-	@$(docker-wrapper) git -C ${config_dir} pull origin {{ config_branch }}
-	@$(docker-wrapper) git -C ${config_dir} checkout {{ config_branch }}
+	@$(docker-wrapper) git -C {{ config_dir }} pull origin {{ config_branch }}
+	@$(docker-wrapper) git -C {{ config_dir }} checkout {{ config_branch }}
 else
-	@$(docker-wrapper) git clone --branch {{ config_branch }} {{ config_repo }} ${config_dir}
+	@$(docker-wrapper) git clone --branch {{ config_branch }} {{ config_repo }} {{ config_dir }}
 endif
-ifneq ($(wildcard ${config_dir}/$(shell git  -C ${source_dir} rev-parse --abbrev-ref HEAD)/.*),)
-ifneq ($(wildcard ${config_dir}/$(shell git  -C ${source_dir} rev-parse --abbrev-ref HEAD)/.parent),)
-	$(call sync_configs,$(shell cat ${config_dir}/$(shell git  -C ${source_dir} rev-parse --abbrev-ref HEAD)/.parent))
+ifneq ($(wildcard {{ config_dir }}/$(shell git  -C {{ source_dir }} rev-parse --abbrev-ref HEAD)/.*),)
+ifneq ($(wildcard {{ config_dir }}/$(shell git  -C {{ source_dir }} rev-parse --abbrev-ref HEAD)/.parent),)
+	$(call sync_configs,$(shell cat {{ config_dir }}/$(shell git  -C {{ source_dir }} rev-parse --abbrev-ref HEAD)/.parent))
 endif
-	$(call sync_configs,$(shell git  -C ${source_dir} rev-parse --abbrev-ref HEAD))
+	$(call sync_configs,$(shell git  -C {{ source_dir }} rev-parse --abbrev-ref HEAD))
 else
 	$(call sync_configs,master)
 endif
 {% endif %}
-${project_name}-deploy-build:	${project_name}-deploy-build-images{% if 'cli' in services %} ${project_name}-deploy-build-app{% endif %}
+{{ project_name }}-deploy-build:	{{ project_name }}-deploy-build-images{% if 'cli' in services %} {{ project_name }}-deploy-build-app{% endif %}
 
-${project_name}-deploy-build-images:
-	@$(docker-wrapper) docker-compose -f ${service_dir}/docker-compose.yml down
-	@$(docker-wrapper) docker-compose -f ${service_dir}/docker-compose.yml build
+{{ project_name }}-deploy-build-images:
+	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml down
+	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml build
 
 {% if 'cli' in services %}
-${project_name}-deploy-build-app:
+{{ project_name }}-deploy-build-app:
 {% if tech in cache_dirs.keys() %}
 	@mkdir -p {{ cache_dirs[tech]|regex_replace('\\:.*','') }}
 {% endif %}
-	@$(docker-wrapper) docker-compose -f ${service_dir}/docker-compose.yml up -d ${project_name}-cli
-	@docker exec ${project_name}-cli /build.sh
-	@$(docker-wrapper) docker-compose -f ${service_dir}/docker-compose.yml up -d
-${project_name}-exec:
-	@docker exec -ti ${project_name}-cli bash -l
+	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml up -d {{ project_name }}-cli
+	@docker exec {{ project_name }}-cli /build.sh
+	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml up -d
+{{ project_name }}-exec:
+	@docker exec -ti {{ project_name }}-cli bash -l
 {% endif %}
 {% if 'redis' in services %}
-${project_name}-exec-redis-cli:
-	@docker exec -ti ${project_name}-redis redis-cli
+{{ project_name }}-exec-redis-cli:
+	@docker exec -ti {{ project_name }}-redis redis-cli
 {% endif %}
 {% if 'workers' in services %}
-${project_name}-exec-workers:
-	@docker exec -ti ${project_name}-workers bash -l
+{{ project_name }}-exec-workers:
+	@docker exec -ti {{ project_name }}-workers bash -l
 {% endif %}
 {% if 'runner' in services %}
-${project_name}-exec-runner:
-	@docker exec -ti ${project_name}-runner bash -l
+{{ project_name }}-exec-runner:
+	@docker exec -ti {{ project_name }}-runner bash -l
 {% endif %}
 {% if 'fpm' in services %}
-${project_name}-exec-fpm:
-	@docker exec -ti ${project_name}-fpm bash -l
+{{ project_name }}-exec-fpm:
+	@docker exec -ti {{ project_name }}-fpm bash -l
 {% endif %}
 
 {% for service in services if service in services_ports.keys() %}
-${project_name}-publish-{{ service }}:
+{{ project_name }}-publish-{{ service }}:
 	@docker ps -q --filter "name=localenv-core-publish-{{ service }}" | grep -q . && docker stop localenv-core-publish-{{ service }} || true
-	@docker run -d --rm --name  localenv-core-publish-{{ service }} --publish {{ services_ports[service] }}:{{ services_ports[service] }} --network=localenv alpine/socat tcp-listen:{{ services_ports[service] }},fork,reuseaddr tcp-connect:${project_name}-{{ service }}:{{ services_ports[service] }}
+	@docker run -d --rm --name  localenv-core-publish-{{ service }} --publish {{ services_ports[service] }}:{{ services_ports[service] }} --network=localenv alpine/socat tcp-listen:{{ services_ports[service] }},fork,reuseaddr tcp-connect:{{ project_name }}-{{ service }}:{{ services_ports[service] }}
 {% endfor %}
