@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-RUN apk -u add bash mc make git rsync docker-compose ansible shadow
+RUN apk -u add bash mc make git rsync docker-compose ansible shadow openssh-client
 
 ARG USER=johndeploy
 ARG UID=1337

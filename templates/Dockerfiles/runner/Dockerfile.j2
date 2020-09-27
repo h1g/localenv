@@ -1,6 +1,6 @@
 FROM {{ services['runner']['image'] }}
 
-RUN apk -u add bash mc make git rsync docker-compose ansible shadow
+RUN apk -u add bash mc make git rsync docker-compose ansible shadow openssh-client
 
 ENV ANSIBLE_DISPLAY_SKIPPED_HOSTS=false
 ENV PY_COLORS=1
