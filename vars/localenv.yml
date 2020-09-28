@@ -45,7 +45,7 @@ source_server: "git@github.com:"
 #Путь хранения репозитория с исходным кодом проекта
 source_repo: "{{ source_server + project + '/' + repo_name + '.git' }}"
 #Ветка по умолчанию при получении исходного кода из git репозитория
-source_branch: 'master'
+source_branch: "master"
 
 #Будем ли получать конфиги
 configs: false
@@ -54,7 +54,7 @@ config_repo: "{{ source_server + project + '/configs/' + repo_name + '.git' }}"
 #Ветка по умолчанию при получении исходного кода из git репозитория
 config_branch: 'master'
 #Название ветки конфигов которая подключается по умолчанию
-config_parent: "master"
+config_parent: "{{ source_branch }}"
 
 #Образ для CLI контейнера по умолчанию
 cli_image: "ubuntu:latest"

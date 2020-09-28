@@ -13,12 +13,7 @@ endif
 {% endif %}
 
 playbook_dir := {{ playbook_dir }}
-config_dir   := {{ config_dir }}
-define sync_configs
-        @$(docker-wrapper) rsync -qav -f"+ */" -f"- *" {{ config_dir }}/$(1)/ {{ source_dir }}/
-        @find {{ config_dir }}/$(1)/ -type f ! -name "*.j2" ! -wholename "*/vault.yml" ! -wholename "*/.parent"|sed 's|{{ config_dir }}/$(1)/||'|xargs -I file ln -sf {{ config_dir }}/$(1)/file {{ source_dir }}/file
-        @$(docker-wrapper) ansible-playbook -i ${playbook_dir}/inventory ${playbook_dir}/configs.yml --extra-vars='project=example repo_name=laravel configs_branch=$(1)'
-endef
+
 {{ project_name }}-images-pull:
 	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml pull
 {{ project_name }}-up:
@@ -50,14 +45,8 @@ ifneq ($(wildcard {{ config_dir + '/.git' }}),)
 else
 	@$(docker-wrapper) git clone --branch {{ config_branch }} {{ config_repo }} {{ config_dir }}
 endif
-ifneq ($(wildcard {{ config_dir }}/$(shell git  -C {{ source_dir }} rev-parse --abbrev-ref HEAD)/.*),)
-ifneq ($(wildcard {{ config_dir }}/$(shell git  -C {{ source_dir }} rev-parse --abbrev-ref HEAD)/.parent),)
-	$(call sync_configs,$(shell cat {{ config_dir }}/$(shell git  -C {{ source_dir }} rev-parse --abbrev-ref HEAD)/.parent))
-endif
-	$(call sync_configs,$(shell git  -C {{ source_dir }} rev-parse --abbrev-ref HEAD))
-else
-	$(call sync_configs,master)
-endif
+	@$(docker-wrapper) ansible-playbook -i ${playbook_dir}/inventory ${playbook_dir}/configs.yml --extra-vars='project={{ project }} repo_name={{ repo_name }} type=parent'
+	@$(docker-wrapper) ansible-playbook -i ${playbook_dir}/inventory ${playbook_dir}/configs.yml --extra-vars='project={{ project }} repo_name={{ repo_name }} type=current'
 {% endif %}
 {{ project_name }}-deploy-build:	{{ project_name }}-deploy-build-images{% if 'cli' in services %} {{ project_name }}-deploy-build-app{% endif %}
 

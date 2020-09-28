@@ -3,6 +3,7 @@ ifdef SSH_AUTH_SOCK
 docker-bootstrap +=-e SSH_AUTH_SOCK=${SSH_AUTH_SOCK} -e SSH_AGENT_PID=${SSH_AGENT_PID}
 endif
 docker-bootstrap +=localenv
+playbook_dir := {{ playbook_dir }}
 {% for project_file in lookup('fileglob',playbook_dir + '/projects/*.yml',wantlist=True) %}
 {% set project_data  = lookup('file',project_file)|from_yaml %}
 {% set project       = project_file|basename|regex_replace('\\.yml','') %}
@@ -15,7 +16,7 @@ deploy-{{ project_name }}: {{ project_name }}-deploy-bootstrap
 	@test -f {{ service_dir }}/Makefile || make {{ project_name }}-deploy-bootstrap-force
 {{ project_name }}-deploy-bootstrap-force:
 	@mkdir -p {{ service_dir }}
-	@$(docker-boptstrap) ansible-playbook -i {{ playbook_dir }}/inventory {{ playbook_dir }}/localenv.yml --extra-vars='project={{ project }} repo_name={{ repo_name }}'
+	@$(docker-boptstrap) ansible-playbook -i ${playbook_dir}/inventory ${playbook_dir}/localenv.yml --extra-vars='project={{ project }} repo_name={{ repo_name }}'
 -include {{ service_dir }}/Makefile
 {% endfor %}
 {% endfor %}

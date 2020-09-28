@@ -1,4 +1,4 @@
-- name: "Sync configs project {{ project }} / {{ repo_name }} to {{ configs_branch }}"
+- name: "Sync type: {{ type }} configs project: {{ project_name }}"
   hosts: localhost
   gather_facts: false
   vars_files:
@@ -6,17 +6,49 @@
     - "{{ playbook_dir }}/vars/localenv.yml"
     - "{{ playbook_dir }}/projects/{{ project }}.yml"
   tasks:
-    - name: "Extract variables for {{ project }} / {{ repo_name }}"
+    - name: "Get source branch for project: {{ project_name }}"
+      shell: "git rev-parse --abbrev-ref HEAD"
+      args:
+        chdir: "{{ source_dir }}"
+      register: git_source_info
+
+    - name: "Set source_branch: {{ config_parent }} if configs for branch: {{ git_source_info.stdout }} exists"
       set_fact:
-        "{{ item.key }}": "{{ item.value }}"
-      loop: "{{ lookup('vars',repo_name)|dict2items }}"
+        source_branch: "{{ git_source_info.stdout }}"
+      when: (config_dir + '/' + git_source_info.stdout) is directory and type == 'current'
 
-    - name: "Load vars from vault file"
-      include_vars: "{{ config_dir + '/' + configs_branch + '/vault.yml' }}"
-      when: (config_dir + '/' + configs_branch + '/vault.yml') is file
+    - name: "Set source_branch if parent configs for branch: {{ git_source_info.stdout }} exists"
+      set_fact:
+        source_branch: "{{ lookup('file', config_dir + '/' + git_source_info.stdout + '/.parent') }}"
+      when: (config_dir + '/' + git_source_info.stdout + '/.parent') is file and type == 'parent'
 
-    - name: "Copy templated configs from : {{ config_dir + '/' + configs_branch }} to {{ source_dir }}"
-      template:
-        src: "{{  config_dir + '/' + configs_branch + '/' + item }}"
-        dest: "{{ source_dir + '/' + item|regex_replace('\\.j2','') }}"
-      loop: "{{ lookup('filetree',config_dir + '/' + configs_branch + '/', wantlist=True )|reject('search','.parent|vault.yml')|selectattr('state','equalto','file')|map(attribute='path')|select('search','.j2')|list }}"
+    - name: "Configs manupulation block"
+      block:
+        - name: "Get configs file tree for projec"
+          set_fact:
+            configs_filetree:  "{{ lookup('filetree',config_dir + '/' + source_branch|default(config_parent)  + '/', wantlist=True )|reject('search','.parent|vault.yml')|list }}"
+
+        - name: "Create all configs dirs"
+          file:
+            dest: "{{ source_dir + '/' + item }}"
+            state: directory
+          loop: "{{ configs_filetree|selectattr('state','equalto','directory')|map(attribute='path')|list }}"
+
+        - name: "Symlink configs from {{ config_dir + '/' + source_branch }} to {{ source_dir }}"
+          file:
+            src: "{{  config_dir + '/' + source_branch + '/' + item }}"
+            dest: "{{ source_dir + '/' + item }}"
+            state: link
+            force: yes
+          loop: "{{ configs_filetree|selectattr('state','equalto','file')|map(attribute='path')|reject('search','.j2')|list }}"
+
+        - name: "Load vars from vault file"
+          include_vars: "{{ config_dir + '/' + source_branch + '/vault.yml' }}"
+          when: (config_dir + '/' + source_branch + '/vault.yml') is file
+
+        - name: "Copy templated configs from : {{ config_dir + '/' + source_branch }} to {{ source_dir }}"
+          template:
+            src: "{{  config_dir + '/' + source_branch + '/' + item }}"
+            dest: "{{ source_dir + '/' + item }}"
+          loop: "{{ configs_filetree|selectattr('state','equalto','file')|map(attribute='path')|select('search','.j2')|list }}"
+      when: type == 'current' or ((config_dir + '/' + git_source_info.stdout + '/.parent') is file and type == 'parent')
