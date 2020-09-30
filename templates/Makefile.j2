@@ -38,13 +38,15 @@ else
 endif
 {% endif %}
 {% if configs %}
-{{ project_name }}-deploy-configs:
+{{ project_name }}-deploy-configs:	{{ project_name }}-deploy-configs-get	{{ project_name }}-deploy-configs-link
+{{ project_name }}-deploy-configs-get:
 ifneq ($(wildcard {{ config_dir + '/.git' }}),)
 	@$(docker-wrapper) git -C {{ config_dir }} pull origin {{ config_branch }}
 	@$(docker-wrapper) git -C {{ config_dir }} checkout {{ config_branch }}
 else
 	@$(docker-wrapper) git clone --branch {{ config_branch }} {{ config_repo }} {{ config_dir }}
 endif
+{{ project_name }}-deploy-configs-link:
 	@$(docker-wrapper) ansible-playbook -i ${playbook_dir}/inventory ${playbook_dir}/configs.yml --extra-vars='project={{ project }} repo_name={{ repo_name }} type=parent'
 	@$(docker-wrapper) ansible-playbook -i ${playbook_dir}/inventory ${playbook_dir}/configs.yml --extra-vars='project={{ project }} repo_name={{ repo_name }} type=current'
 {% endif %}

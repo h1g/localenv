@@ -24,7 +24,7 @@
 
     - name: "Configs manupulation block"
       block:
-        - name: "Get configs file tree for projec"
+        - name: "Get configs file tree for project: {{ project_name }}"
           set_fact:
             configs_filetree:  "{{ lookup('filetree',config_dir + '/' + source_branch|default(config_parent)  + '/', wantlist=True )|reject('search','.parent|vault.yml')|list }}"
 

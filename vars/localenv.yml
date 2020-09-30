@@ -52,9 +52,9 @@ configs: false
 #Путь хранения репозитория с конфигурационными файлами
 config_repo: "{{ source_server + project + '/configs/' + repo_name + '.git' }}"
 #Ветка по умолчанию при получении исходного кода из git репозитория
-config_branch: 'master'
+config_branch: "master"
 #Название ветки конфигов которая подключается по умолчанию
-config_parent: "{{ source_branch }}"
+config_parent: "master"
 
 #Образ для CLI контейнера по умолчанию
 cli_image: "ubuntu:latest"
