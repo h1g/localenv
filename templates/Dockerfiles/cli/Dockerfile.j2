@@ -19,7 +19,8 @@ RUN echo "{{ ansible_user }} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/{{ ansible
 
 #Настройка пользователя и выставление нужных разрешений
 COPY ./bashrc /bashrc
-RUN cat /bashrc >> {{ home_dir }}/.bashrc && rm /bashrc
+RUN cat /bashrc >> {{ home_dir }}/.bashrc
+RUN rm /bashrc
 
 RUN mkdir -p /var/www
 RUN chown -R {{ ansible_user }}:root /var/run/ /var/log/ /opt
@@ -27,6 +28,7 @@ RUN chown -R {{ ansible_user }}:{{ ansible_user }} {{ home_dir }} /var/www
 
 {% if 'workers' in services %}
 RUN apt-get install -y supervisor
+chown {{ ansible_user }}:root /dev/{stdout,stderr} /etc/supervisor/supervisord.conf /opt/run /run
 {% endif %}
 
 {% if tech == 'php' %}

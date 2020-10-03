@@ -33,14 +33,6 @@ dockerfiles_primitives_path: "{{ playbook_dir + '/templates/Dockerfiles/' }}"
 #Домашняя директория, в которой будут созданы папки для хранения кеша
 home_dir: "{{ lookup('env','HOME') }}"
 
-#Словарь сопоставления директорий хранения кеша хост системы и контейнера для разных технологий
-cache_dirs:
-  npm: "{{ home_dir + '/.npm:' + home_dir + '/.npm' }}"
-  php: "{{ home_dir + '/.composer:' + home_dir + '/.composer' }}"
-  ruby: "{{ home_dir + '/.bundle/' + ruby_version|default(omit) + ':' + home_dir + '/.gem' }}"
-  md: "{{ home_dir + '/.bundle/' + ruby_version|default(omit) + ':' + home_dir + '/.gem' }}"
-  python: "{{ home_dir + '/.cache/pip'+ ':' + home_dir + '/.cache/pip' }}"
-
 #Основной сервер хранения исходного кода проектов
 source_server: "git@github.com:"
 #Путь хранения репозитория с исходным кодом проекта
