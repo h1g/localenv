@@ -42,14 +42,22 @@ laravel:
         - MYSQL_USER=root
       volumes:
         - /var/lib/mysql
-docs:
+laravel-docs:
   source_repo: 'https://github.com/laravel/docs.git'
   source_branch: 'master'
   build_command: 'gem install madness'
-  tech: 'md'
+  tech: 'ruby'
   services:
     cli:
     madness:
     nginx:
       volumes:
         - '{{ source_dir }}:/var/www/public'
+
+diagrams:
+  source_repo: 'https://github.com/h1g/diagrams.git'
+  build_command: 'sudo apt install -y graphviz && pip install -r requirements.txt'
+  tech: 'python'
+  services:
+    cli:
+

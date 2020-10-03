@@ -1,0 +1,8 @@
+#Задаем версию python
+python_version: "3.8"
+#Определяем образ для cli контейнера
+cli_image: "{{ services['cli']['image']|default('python:' + python_version) }}"
+#Задаем список команд необходимых для развертывания приложения
+build_command: "pip install -r requirements.txt"
+#Директория для кеша pip
+cache_dir : "{{ home_dir + '/.cache/pip'+ ':' + home_dir + '/.cache/pip' }}"

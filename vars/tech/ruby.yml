@@ -4,3 +4,7 @@ ruby_version: "2.7.1"
 cli_image: "{{ services['cli']['image']|default('ruby:' + ruby_version) }}"
 #Задаем список команд необходимых для развертывания приложения
 build_command: "gem install madness"
+#Директория для кеша bundler
+cache_dir: "{{ home_dir + '/.bundle/' + ruby_version + ':' + home_dir + '/.gem' }}"
+
+

@@ -13,8 +13,8 @@ volumes:
 {% if configs %}
   - {{ config_dir }}:{{ config_dir }}
 {% endif %}
-{% if  cache_dirs[tech] is defined %}
-  - {{ cache_dirs[tech] }}
+{% if  cache_dir is defined %}
+  - {{ cache_dir }}
 {% endif %}
 {% if lookup('env','SSH_AGENT_PID') is defined %}
 environment:

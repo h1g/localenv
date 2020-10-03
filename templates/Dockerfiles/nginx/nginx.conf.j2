@@ -27,7 +27,7 @@ server {
     if_modified_since off;
   }
 {% endif %}
-{% if tech == 'md' %}
+{% if tech == 'ruby' %}
   location / {
     proxy_set_header   X-Forwarded-For $remote_addr;
     proxy_set_header   Host $http_host;

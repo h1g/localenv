@@ -39,6 +39,7 @@ cache_dirs:
   php: "{{ home_dir + '/.composer:' + home_dir + '/.composer' }}"
   ruby: "{{ home_dir + '/.bundle/' + ruby_version|default(omit) + ':' + home_dir + '/.gem' }}"
   md: "{{ home_dir + '/.bundle/' + ruby_version|default(omit) + ':' + home_dir + '/.gem' }}"
+  python: "{{ home_dir + '/.cache/pip'+ ':' + home_dir + '/.cache/pip' }}"
 
 #Основной сервер хранения исходного кода проектов
 source_server: "git@github.com:"

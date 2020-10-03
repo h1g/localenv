@@ -61,7 +61,7 @@ RUN chmod +x /build.sh
 
 WORKDIR /var/www
 USER {{ ansible_user }}
-{% if tech in ['ruby','md'] %}
+{% if tech in ['ruby'] %}
 #Секция для технологий: ruby и md
 ENV GEM_HOME={{ home_dir }}/.gem
 ENV GEM_PATH={{ home_dir }}/.gem

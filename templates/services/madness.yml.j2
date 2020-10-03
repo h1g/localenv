@@ -4,9 +4,7 @@ volumes:
 {% if configs %}
   - {{ config_dir }}:{{ config_dir }}
 {% endif %}
-{% if  cache_dirs[tech] is defined %}
-  - {{ cache_dirs[tech] }}
-{% endif %}
+  - {{ cache_dir }}
 command: ["$HOME/.gem/bin/madness","/var/www"]
 depends_on:
   - {{ project_name }}-cli

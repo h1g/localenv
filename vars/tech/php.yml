@@ -4,6 +4,10 @@ php_version: "7.4.10"
 cli_image: "{{ services['cli']['image']|default('php:' + php_version + 'fpm') }}"
 #Задаем список команд необходимых для развертывания приложения
 build_command: "composer install"
+
+#Директория для кеша composer
+cache_dir: "{{ home_dir + '/.composer:' + home_dir + '/.composer' }}"
+
 #Список зависимостей для пхп расширений
 php_modules_deps:
   zip:
