@@ -15,17 +15,17 @@ endif
 playbook_dir := {{ playbook_dir }}
 
 {{ project_name }}-images-pull:
-	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml pull
+	@$(docker-wrapper) docker-compose -f {{ infra_dir }}/docker-compose.yml pull
 {{ project_name }}-up:
-	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml up -d
+	@$(docker-wrapper) docker-compose -f {{ infra_dir }}/docker-compose.yml up -d
 {{ project_name }}-down:
-	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml down
+	@$(docker-wrapper) docker-compose -f {{ infra_dir }}/docker-compose.yml down
 {{ project_name }}-restart:  {{ project_name }}-down  {{ project_name }}-up
 
 {{ project_name }}-deploy:	{{ project_name }}-deploy-render{% if tech != 'service' %}	{{ project_name }}-deploy-sources{% endif %}{% if configs %}	{{ project_name }}-deploy-configs{% endif %}	{{ project_name }}-deploy-build	{{ project_name }}-up
 
 {{ project_name }}-deploy-render:
-	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml ps -q|wc -l|grep -qv 0 && $(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml down --remove-orphans || true
+	@$(docker-wrapper) docker-compose -f {{ infra_dir }}/docker-compose.yml ps -q|wc -l|grep -qv 0 && $(docker-wrapper) docker-compose -f {{ infra_dir }}/docker-compose.yml down --remove-orphans || true
 	@$(docker-wrapper) ansible-playbook -i ${playbook_dir}/inventory ${playbook_dir}/localenv.yml --extra-vars='project={{ project }} repo_name={{ repo_name }}'
 
 {% if tech != 'service' %}
@@ -56,14 +56,14 @@ endif
 {% if cache_dir is defined %}
 	@mkdir -p {{ cache_dir|regex_replace('\\:.*','') }}
 {% endif %}
-	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml down
-	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml build
+	@$(docker-wrapper) docker-compose -f {{ infra_dir }}/docker-compose.yml down
+	@$(docker-wrapper) docker-compose -f {{ infra_dir }}/docker-compose.yml build
 
 {% if 'cli' in services %}
 {{ project_name }}-deploy-build-app:
-	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml up -d {{ project_name }}-cli
+	@$(docker-wrapper) docker-compose -f {{ infra_dir }}/docker-compose.yml up -d {{ project_name }}-cli
 	@docker exec {{ project_name }}-cli /build.sh
-	@$(docker-wrapper) docker-compose -f {{ service_dir }}/docker-compose.yml up -d
+	@$(docker-wrapper) docker-compose -f {{ infra_dir }}/docker-compose.yml up -d
 {{ project_name }}-exec:
 	@docker exec -ti {{ project_name }}-cli bash -l
 {% endif %}

@@ -1,7 +1,7 @@
 #Полное название проекта
 project_name: "{{ project + '-' + repo_name }}"
-#Директория для хранения сервисных файлов развертываемого проекта
-service_dir: "{{ services_dir + '/' + project_name }}"
+#Директория для хранения файлов с офисание инфраструктуры развертываемого проекта
+infra_dir: "{{ infras_dir + '/' + project_name }}"
 #Директория для хранения исходного кода развертываемого проекта
 source_dir:  "{{ sources_dir + '/' +  project_name }}"
 #Директория для хранения конфигурационных файлов развертываемого проекта
@@ -29,6 +29,9 @@ services_primitives_path: "{{ playbook_dir + '/templates/services/' }}"
 
 #Директория хранения директорий примитивов с Dockerfile для сервисов docker-compose
 dockerfiles_primitives_path: "{{ playbook_dir + '/templates/Dockerfiles/' }}"
+
+#Загружаем файловое древо с шаблонами Dockerfile
+dockerfiles_filetree:  "{{ lookup('filetree',dockerfiles_primitives_path,wantlist=True) }}"
 
 #Домашняя директория, в которой будут созданы папки для хранения кеша
 home_dir: "{{ lookup('env','HOME') }}"

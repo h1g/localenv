@@ -1,16 +1,16 @@
-- name: "Render {{ services_dir }}/Makefile with deploy targets for all projects"
+- name: "Render {{ infras_dir }}/Makefile with deploy targets for all projects"
   hosts: localhost
   gather_facts: false
   vars_files:
     - "{{ playbook_dir }}/vars/main.yml"
   tasks:
-    - name: "Create {{ services_dir }}"
+    - name: "Create {{ infras_dir }}"
       file:
-        path: "{{ services_dir }}"
+        path: "{{ infras_dir }}"
         state: "directory"
 
-    - name: "Render {{ services_dir }}/Makefile with deploy targets for all projects"
+    - name: "Render {{ infras_dir }}/Makefile with deploy targets for all projects"
       template:
         src: "{{ playbook_dir }}/templates/Makefile.deploy.j2"
-        dest: "{{ services_dir }}/Makefile"
+        dest: "{{ infras_dir }}/Makefile"
 

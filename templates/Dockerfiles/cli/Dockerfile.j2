@@ -43,7 +43,7 @@ RUN chown -R {{ ansible_user }}:root /run/php/
 {% if services['cli']['image']|regex_replace (':.*','') == 'php' %}
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-RUN apt-get install -y {% for deps in php_modules_deps|intersect(php_modules|default(php_modules_default)) %}{{ php_modules_deps[deps]|join(' ') }} {% endfor %}
+RUN apt-get install -y {% for deps in php_modules_deps|intersect(php_modules) %}{{ php_modules_deps[deps]|join(' ') }} {% endfor %}
 
 RUN pecl config-set php_ini "${PHP_INI_DIR}/php.ini"
 RUN docker-php-source extract

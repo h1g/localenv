@@ -56,4 +56,4 @@ deploy-localenv:
 
 install: deploy render deploy-localenv
 
--include ./services/Makefile
+-include ./infra/Makefile

@@ -2,6 +2,6 @@ core:
   tech: 'service'
   services:
     dns:
-    proxy:
+    ingress:
     runner:
 

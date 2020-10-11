@@ -9,14 +9,14 @@ playbook_dir := {{ playbook_dir }}
 {% set project       = project_file|basename|regex_replace('\\.yml','') %}
 {% for repo_name in project_data.keys() if project_data[repo_name] is mapping %}
 {% set project_name  = project + '-' + repo_name %}
-{% set service_dir   = services_dir + '/' + project_name %}
+{% set infra_dir   = infras_dir + '/' + project_name %}
 deploy-{{ project_name }}: {{ project_name }}-deploy-bootstrap
-	@make -C {{ service_dir }} {{ project_name }}-deploy
+	@make -C {{ infra_dir }} {{ project_name }}-deploy
 {{ project_name }}-deploy-bootstrap:
-	@test -f {{ service_dir }}/Makefile || make {{ project_name }}-deploy-bootstrap-force
+	@test -f {{ infra_dir }}/Makefile || make {{ project_name }}-deploy-bootstrap-force
 {{ project_name }}-deploy-bootstrap-force:
-	@mkdir -p {{ service_dir }}
+	@mkdir -p {{ infra_dir }}
 	@$(docker-boptstrap) ansible-playbook -i ${playbook_dir}/inventory ${playbook_dir}/localenv.yml --extra-vars='project={{ project }} repo_name={{ repo_name }}'
--include {{ service_dir }}/Makefile
+-include {{ infra_dir }}/Makefile
 {% endfor %}
 {% endfor %}
