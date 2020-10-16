@@ -7,7 +7,7 @@ volumes:
   - '{{ source_dir }}:/var/www'
   - '{{ home_dir }}/.ssh/:{{ home_dir }}/.ssh/'
   - '{{ home_dir }}/.gitconfig:{{ home_dir }}/.gitconfig'
-{% if lookup('env','SSH_AGENT_PID') is defined %}
+{% if lookup('env','SSH_AUTH_SOCK')|default('')|length >0 %}
   - ${SSH_AUTH_SOCK}:${SSH_AUTH_SOCK}
 {% endif %}
 {% if configs %}
@@ -16,7 +16,7 @@ volumes:
 {% if  cache_dir is defined %}
   - {{ cache_dir }}
 {% endif %}
-{% if lookup('env','SSH_AGENT_PID') is defined %}
+{% if lookup('env','SSH_AUTH_SOCK')|default('')|length >0 %}
 environment:
   - SSH_AGENT_PID
   - SSH_AUTH_SOCK
