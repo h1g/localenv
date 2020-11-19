@@ -27,11 +27,8 @@ services_primitives: {}
 #Директория хранения примитивов сервисов docker-compose
 services_primitives_path: "{{ playbook_dir + '/templates/services/' }}"
 
-#Директория хранения директорий примитивов с Dockerfile для сервисов docker-compose
-dockerfiles_primitives_path: "{{ playbook_dir + '/templates/Dockerfiles/' }}"
-
-#Загружаем файловое древо с шаблонами Dockerfile
-dockerfiles_filetree:  "{{ lookup('filetree',dockerfiles_primitives_path,wantlist=True) }}"
+#Загружаем файловое древо примитивов сервисов docker-compose
+dockerfiles_filetree:  "{{ lookup('filetree',services_primitives_path,wantlist=True)|reject('search','service.yml.j2')|list }}"
 
 #Домашняя директория, в которой будут созданы папки для хранения кеша
 home_dir: "{{ lookup('env','HOME') }}"

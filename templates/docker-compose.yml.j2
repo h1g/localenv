@@ -6,7 +6,7 @@ services:
   {{ project_name }}-{{ service }}:
     container_name: {{ project_name }}-{{ service }}
     hostname: {{ project_name }}-{{ service }}
-{% set service_dockerfile = dockerfiles_primitives_path + service + '/Dockerfile' %}
+{% set service_dockerfile = services_primitives_path + service + '/Dockerfile' %}
 {% if ((service_dockerfile is file) or ((service_dockerfile + '.j2') is file)) %}
     build:
       context: ./{{ service }}/
