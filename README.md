@@ -125,15 +125,15 @@ make deploy-example-laravel
 ```
 -----------------
 ##### После развертывания проекта, если сервис предполагает http доcтуп, он доступен по адресу:
-http://repo_name.project.localenv
+http://repo_name-project.localenv
 
 например, для проекта example, laravel микросервис будет доступен по данному урлу:
 
-http://laravel.example.localenv
+http://laravel-example.localenv
 
 а docs микросервис, для проекта example, будет доступен по данному урлу:
 
-http://docs.example.localenv
+http://docs-example.localenv
 
 ### Структура универсального локального окружения разработчика
 ```shell
@@ -145,7 +145,7 @@ localenv                              # Рабочая директория ло
 │   └── example_laravel               # Конфиги фреймворка Laravel
 │       ├── develop                   # Конфиги для ветки master
 │       └── master                    # Конфиги для ветки develop
-├── services                          # Сервисная директория с посервисными папками для каждого сервиса
+├── infra                             # Сервисная директория с посервисными папками для каждого сервиса
 │   ├── example_laravel               # Сервисная директория для проекта example_laravel
 │   │    ├── docker-compose.yml       # Docker-compose файл проекта example_laravel
 │   │    ├── Makefile                 # Файл инструкций для make проекта example_laravel
