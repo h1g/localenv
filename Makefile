@@ -9,18 +9,6 @@ ifeq (,$(wildcard ${HOME}/.gitconfig))
 endif
 
 export OS_NAME := $(shell uname -s | tr A-Z a-z)
-export UID := $(shell id -u)
-export GID := $(shell id -g)
-docker_le_net_gw =docker network inspect localenv --format '{{range .IPAM.Config}}{{.Gateway}}{{end}}'
-export LE_NET_GW = $(shell ${docker_le_net_gw} )
-
-docker-bootstrap :=docker run --rm -v '/var/run/docker.sock:/var/run/docker.sock' -v '${HOME}:${HOME}'
-ifdef SSH_AUTH_SOCK
-docker-bootstrap +=-e SSH_AUTH_SOCK=${SSH_AUTH_SOCK} -e SSH_AGENT_PID=${SSH_AGENT_PID}
-endif
-docker-bootstrap +=localenv
-
-
 ifeq ($(OS_NAME),linux)
 ifeq (,$(shell id -Gn ${USER}|grep docker))
     $(error "User:${USER} not in docker group. Run: sudo usermod -aG docker ${USER} and reboot")
@@ -42,18 +30,25 @@ $(shell sed -i~ 's/"credsStore" : "desktop"/"credStore" : "osxkeychain"/g' ~/.do
 DOCKER_GID := "0"
 endif
 
-.PHONY: deploy
+docker-bootstrap :=docker run --rm -v '/var/run/docker.sock:/var/run/docker.sock' -v '${PWD}:${PWD}' -e 'WORK_DIR=${PWD}' -v '${HOME}/.ssh:${HOME}/.ssh'
+ifdef SSH_AUTH_SOCK
+docker-bootstrap +=-e SSH_AUTH_SOCK=${SSH_AUTH_SOCK} -e SSH_AGENT_PID=${SSH_AGENT_PID} -v '${SSH_AUTH_SOCK}:${SSH_AUTH_SOCK}'
+endif
+docker-bootstrap +=localenv
 
-deploy:
+
+.PHONY: install
+
+build:
 	@docker network inspect localenv >/dev/null 2>&1 || docker network create localenv >/dev/null 2>&1
-	@$(eval export LE_NET_GW := $(shell ${docker_le_net_gw}))
-	@docker build --build-arg UID=${UID} --build-arg GID=${GID} --build-arg USER=${USER} --build-arg HOME=${HOME} --build-arg WORKDIR=${PWD} --build-arg OS_NAME=${OS_NAME} --build-arg DOCKER_GID=${DOCKER_GID} --build-arg LE_NET_GW=${LE_NET_GW} -t localenv .
+	@$(eval export LE_NET_GW := $(shell docker network inspect localenv --format '{{range .IPAM.Config}}{{.Gateway}}{{end}}'))
+	docker build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) --build-arg USER=${USER} --build-arg HOME=${HOME} --build-arg WORKDIR=${PWD} --build-arg OS_NAME=${OS_NAME} --build-arg DOCKER_GID=${DOCKER_GID} --build-arg LE_NET_GW=${LE_NET_GW} -t localenv .
 render:
-	@$(docker-bootstrap) ansible-playbook -i inventory render.yml
+	$(docker-bootstrap) ansible-playbook -i inventory render.yml
 
-deploy-localenv:
+core:
 	@make deploy-localenv-core
 
-install: deploy render deploy-localenv
+install: build render core
 
 -include ./infra/Makefile

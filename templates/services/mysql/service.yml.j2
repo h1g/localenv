@@ -1,8 +1,0 @@
-image: 'percona:8'
-command: ["mysqld", "--default-authentication-plugin=mysql_native_password"]
-environment:
-  - MYSQL_ROOT_PASSWORD=pass
-  - MYSQL_DATABASE=db
-  - MYSQL_USER=root
-volumes:
-  - /var/lib/mysql

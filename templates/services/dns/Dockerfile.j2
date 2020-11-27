@@ -1,6 +1,0 @@
-FROM {{ services['dns']['image'] }}
-
-RUN apk -u add bash mc
-
-COPY ./entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh

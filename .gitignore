@@ -4,6 +4,7 @@ projects/*
 infra/*
 sources/*
 configs/*
+.localenv
 *.retry
 .vscode
 .idea
