@@ -43,6 +43,7 @@ laravel:
         - MYSQL_USER=root
       volumes:
         - /var/lib/mysql
+
 laravel-docs:
   source_repo: 'https://github.com/laravel/docs.git'
   source_branch: 'master'

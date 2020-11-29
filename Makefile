@@ -30,11 +30,16 @@ $(shell sed -i~ 's/"credsStore" : "desktop"/"credStore" : "osxkeychain"/g' ~/.do
 DOCKER_GID := "0"
 endif
 
-docker-bootstrap :=docker run --rm -v '/var/run/docker.sock:/var/run/docker.sock' -v '${PWD}:${PWD}' -e 'WORK_DIR=${PWD}' -v '${HOME}/.ssh:${HOME}/.ssh'
+localdev_deploy := $(shell docker ps | grep -c localenv-dev-cli)
+ifeq ($(localdev_deploy),0)
+docker-wrapper :=docker run --rm -v '/var/run/docker.sock:/var/run/docker.sock' -v '${PWD}:${PWD}' -e 'WORK_DIR=${PWD}' -v '${HOME}/.ssh:${HOME}/.ssh'
 ifdef SSH_AUTH_SOCK
-docker-bootstrap +=-e SSH_AUTH_SOCK=${SSH_AUTH_SOCK} -e SSH_AGENT_PID=${SSH_AGENT_PID} -v '${SSH_AUTH_SOCK}:${SSH_AUTH_SOCK}'
+docker-wrapper +=-e SSH_AUTH_SOCK=${SSH_AUTH_SOCK} -e SSH_AGENT_PID=${SSH_AGENT_PID} -v '${SSH_AUTH_SOCK}:${SSH_AUTH_SOCK}'
 endif
-docker-bootstrap +=localenv
+docker-wrapper +=localenv
+else
+docker-wrapper :=docker exec -w /var/www -e 'WORK_DIR=${PWD}' localenv-dev-cli
+endif
 
 
 .PHONY: install
@@ -42,13 +47,15 @@ docker-bootstrap +=localenv
 build:
 	@docker network inspect localenv >/dev/null 2>&1 || docker network create localenv >/dev/null 2>&1
 	@$(eval export LE_NET_GW := $(shell docker network inspect localenv --format '{{range .IPAM.Config}}{{.Gateway}}{{end}}'))
-	@docker build --pull --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) --build-arg USER=${USER} --build-arg HOME=${HOME} --build-arg WORKDIR=${PWD} --build-arg OS_NAME=${OS_NAME} --build-arg DOCKER_GID=${DOCKER_GID} --build-arg LE_NET_GW=${LE_NET_GW} -t localenv .
+	@docker build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) --build-arg USER=${USER} --build-arg HOME=${HOME} --build-arg WORKDIR=${PWD} --build-arg OS_NAME=${OS_NAME} --build-arg DOCKER_GID=${DOCKER_GID} --build-arg LE_NET_GW=${LE_NET_GW} -t localenv .
+update:
+	@cat ./Dockerfile|head -n1|awk '{print $2}'|xargs docker pull
 render:
-	$(docker-bootstrap) ansible-playbook -i inventory render.yml
+	$(docker-wrapper) ansible-playbook -i inventory render.yml
 
 core:
 	@make deploy-localenv-core
 
-install: build render core
+install: update build render core
 
 -include ./infra/Makefile

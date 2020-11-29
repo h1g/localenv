@@ -1,8 +1,8 @@
 FROM gnovicov/localdev:latest
 
-FROM alpine:latest
+FROM python:3.6
 
-RUN apk -u add bash mc make git rsync docker-compose ansible shadow openssh-client
+RUN pip install ansible docker-compose
 
 ARG USER=johndeploy
 ARG UID=1337
