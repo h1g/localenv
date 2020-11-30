@@ -11,4 +11,3 @@ dev:
   python_version: '3.6'
   services:
     cli:
-

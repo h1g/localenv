@@ -30,16 +30,17 @@ $(shell sed -i~ 's/"credsStore" : "desktop"/"credStore" : "osxkeychain"/g' ~/.do
 DOCKER_GID := "0"
 endif
 
-localdev_deploy := $(shell docker ps | grep -c localenv-dev-cli)
-ifeq ($(localdev_deploy),0)
-docker-wrapper :=docker run --rm -v '/var/run/docker.sock:/var/run/docker.sock' -v '${PWD}:${PWD}' -e 'WORK_DIR=${PWD}' -v '${HOME}/.ssh:${HOME}/.ssh'
+
+
+docker-wrapper := docker run --rm -v '/var/run/docker.sock:/var/run/docker.sock' -v '${PWD}:${PWD}' -e 'WORK_DIR=${PWD}' -v '${HOME}/.ssh:${HOME}/.ssh'
+is-localdev := $(wildcard $(PWD)/sources/localenv-dev)
+ifneq ($(strip $(is-localdev)),)
+docker-wrapper +=-v '${PWD}/sources/localenv-dev:/ansible'
+endif
 ifdef SSH_AUTH_SOCK
 docker-wrapper +=-e SSH_AUTH_SOCK=${SSH_AUTH_SOCK} -e SSH_AGENT_PID=${SSH_AGENT_PID} -v '${SSH_AUTH_SOCK}:${SSH_AUTH_SOCK}'
 endif
 docker-wrapper +=localenv
-else
-docker-wrapper :=docker exec -w /var/www -e 'WORK_DIR=${PWD}' localenv-dev-cli
-endif
 
 
 .PHONY: install
