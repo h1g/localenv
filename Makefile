@@ -50,7 +50,7 @@ build:
 	@$(eval export LE_NET_GW := $(shell docker network inspect localenv --format '{{range .IPAM.Config}}{{.Gateway}}{{end}}'))
 	@docker build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) --build-arg USER=${USER} --build-arg HOME=${HOME} --build-arg WORKDIR=${PWD} --build-arg OS_NAME=${OS_NAME} --build-arg DOCKER_GID=${DOCKER_GID} --build-arg LE_NET_GW=${LE_NET_GW} -t localenv .
 update:
-	@cat ./Dockerfile|head -n1|awk '{print $2}'|xargs docker pull
+	@docker pull gnovicov/localdev:latest
 render:
 	@$(docker-wrapper) ansible-playbook -i inventory render.yml
 
