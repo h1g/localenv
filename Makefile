@@ -52,7 +52,7 @@ build:
 update:
 	@cat ./Dockerfile|head -n1|awk '{print $2}'|xargs docker pull
 render:
-	$(docker-wrapper) ansible-playbook -i inventory render.yml
+	@$(docker-wrapper) ansible-playbook -i inventory render.yml
 
 core:
 	@make deploy-localenv-core
