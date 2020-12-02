@@ -1,12 +1,10 @@
 laravel:
-  source_repo: 'https://github.com/laravel/laravel.git'
-  source_branch: 'master'
-  configs: true
-  config_repo: 'https://github.com/h1g/laravel-configs-laravel.git'
-  config_branch: 'master'
-  build_command: >-
-    composer install &&
-    php artisan migrate
+  services:
+    cli:
+    fpm:
+    mysql:
+    nginx:
+    redis:
   tech: 'php'
   php_modules:
     - "redis-5.3.0"
@@ -24,25 +22,14 @@ laravel:
     - "pspell"
     - "soap"
     - "xml"
-  services:
-    nginx:
-      image: 'nginx:latest'
-    fpm:
-    cli:
-      image: 'php:7.4.10-fpm'
-    redis:
-      image: 'redis:5.0.7-alpine'
-      volumes:
-        - /var/lib/redis
-    mysql:
-      image: 'percona:8'
-      command: ["mysqld", "--default-authentication-plugin=mysql_native_password"]
-      environment:
-        - MYSQL_ROOT_PASSWORD=pass
-        - MYSQL_DATABASE=db
-        - MYSQL_USER=root
-      volumes:
-        - /var/lib/mysql
+  source_repo: 'https://github.com/laravel/laravel.git'
+  source_branch: 'master'
+  configs: true
+  config_repo: 'https://github.com/h1g/laravel-configs-laravel.git'
+  config_branch: 'master'
+  build_command: >-
+    composer install &&
+    php artisan migrate
 
 laravel-docs:
   source_repo: 'https://github.com/laravel/docs.git'
@@ -55,10 +42,3 @@ laravel-docs:
     nginx:
       volumes:
         - '{{ source_dir }}:/var/www/public'
-
-diagrams:
-  source_repo: 'https://github.com/h1g/diagrams.git'
-  build_command: 'sudo apt install -y graphviz && pip install -r requirements.txt'
-  tech: 'python'
-  services:
-    cli:
