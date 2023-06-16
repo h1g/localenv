@@ -1,14 +1,17 @@
+check:
+	@exit 0
 ifeq (,$(shell which docker))
-	$(error "Error: docker self-sufficient runtime for containers not available")
+$(error "Error: docker self-sufficient runtime for containers not available")
 endif
 ifeq (,$(wildcard ${HOME}/.ssh/id_rsa))
-	$(error "Error: ${HOME}/.ssh/id_rsa - ssh private key does not exist. Run: ssh-keygen")
+$(error "Error: ${HOME}/.ssh/id_rsa - ssh private key does not exist. Run: ssh-keygen")
 endif
 ifeq (,$(wildcard ${HOME}/.gitconfig))
-	$(error "Error: ${HOME}/.gitconfig - gitconfig key does not exist. Run: git config --global user.name 'John Deploy'; git config --global user.email 'johndeploy@example.com'")
+$(error "Error: ${HOME}/.gitconfig - gitconfig key does not exist. Run: git config --global user.name 'John Deploy'; git config --global user.email 'johndeploy@example.com'")
 endif
 
 export OS_NAME := $(shell uname -s | tr A-Z a-z)
+export OS_ARCH  := $(shell uname -m )
 ifeq ($(OS_NAME),linux)
 ifeq (,$(shell id -Gn ${USER}|grep docker))
     $(error "User:${USER} not in docker group. Run: sudo usermod -aG docker ${USER} and reboot")
@@ -20,14 +23,14 @@ endif
 endif
 
 ifeq ($(OS_NAME),darwin)
-ifeq (,$(shell groups ${USER}|grep  wheel))
-	$(error "Error: User ${USER} not in group wheel. Run: sudo dseditgroup -o edit -a ${USER} -t user wheel ")
+ifeq (,$(shell groups ${USER}|grep wheel))
+$(error "Error: User ${USER} not in group wheel. Run: sudo dseditgroup -o edit -a ${USER} -t user wheel ")
 endif
 ifeq (,$(shell stat -f %A /etc/hosts|grep 664))
-	$(error "Error: /etc/hosts permission denied. Run: sudo chmod 664 /etc/hosts ")
+$(error "Error: /etc/hosts permission denied. Run: sudo chmod 664 /etc/hosts ")
 endif
 $(shell sed -i~ 's/"credsStore" : "desktop"/"credStore" : "osxkeychain"/g' ~/.docker/config.json)
-DOCKER_GID := "0"
+DOCKER_GID :=$(shell stat -f%g /var/run/docker.sock)
 endif
 
 
@@ -50,7 +53,8 @@ build:
 	@$(eval export LE_NET_GW := $(shell docker network inspect localenv --format '{{range .IPAM.Config}}{{.Gateway}}{{end}}'))
 	@docker build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) --build-arg USER=${USER} --build-arg HOME=${HOME} --build-arg WORKDIR=${PWD} --build-arg OS_NAME=${OS_NAME} --build-arg DOCKER_GID=${DOCKER_GID} --build-arg LE_NET_GW=${LE_NET_GW} -t localenv .
 update:
-	@docker pull gnovicov/localdev:latest
+	@docker pull gnovicov/localdev:${OS_ARCH}
+	@docker tag  gnovicov/localdev:${OS_ARCH} gnovicov/localdev:latest
 render:
 	@$(docker-wrapper) ansible-playbook -i inventory render.yml
 

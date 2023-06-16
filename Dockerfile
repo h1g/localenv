@@ -1,9 +1,5 @@
 FROM gnovicov/localdev:latest
-
-FROM python:3.6
-
-RUN pip install ansible docker-compose
-
+FROM docker:dind
 ARG USER=johndeploy
 ARG UID=1337
 ARG GID=1337
@@ -21,7 +17,7 @@ ENV USER=$USER
 ENV OS_NAME=$OS_NAME
 ENV DOCKER_GID=$DOCKER_GID
 ENV WORK_DIR=$WORKDIR
-
+RUN apk add -u python3 bash mc ansible docker-compose shadow sudo
 RUN if [ $(getent group $GID) ]; then groupmod -n $USER -g $GID $(getent group $GID|cut -d ":" -f1); \
     else groupadd --gid $GID $USER; fi
 RUN if [ $(getent passwd $UID) ]; then usermod -d $HOME -s /bin/bash -l $USER -u  $UID -g $GID $(getent passwd $UID|cut -d ":" -f1); mkhomedir_helper $USER; \
@@ -29,7 +25,7 @@ RUN if [ $(getent passwd $UID) ]; then usermod -d $HOME -s /bin/bash -l $USER -u
 RUN if [ $(getent group $DOCKER_GID) ]; then groupmod -n docker -g $DOCKER_GID $(getent group $DOCKER_GID|cut -d ":" -f1); \
     else groupadd --gid $DOCKER_GID docker; fi
 RUN usermod -aG docker $USER
-
+RUN echo "$USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 COPY --from=0 /ansible /ansible
 WORKDIR /ansible
 USER $USER
