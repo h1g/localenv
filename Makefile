@@ -12,12 +12,14 @@ endif
 
 export OS_NAME := $(shell uname -s | tr A-Z a-z)
 export OS_ARCH  := $(shell uname -m )
+
 ifeq ($(OS_NAME),linux)
+ifeq (,$(grep -qEi "(Microsoft|WSL)" /proc/version))
 ifeq (,$(shell id -Gn ${USER}|grep docker))
-    $(error "User:${USER} not in docker group. Run: sudo usermod -aG docker ${USER} and reboot")
-endif
+$(error "User:${USER} not in docker group. Run: sudo usermod -aG docker ${USER} and reboot")
 DOCKER_GID :=$(shell stat -c%g /var/run/docker.sock)
-ifdef WSL_DISTRO_NAME
+endif
+else
 export OS_NAME := "wsl"
 endif
 endif
