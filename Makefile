@@ -41,7 +41,7 @@ ifneq ($(strip $(is-localdev)),)
 docker-wrapper +=-v '${PWD}/sources/localenv-dev:/ansible'
 endif
 ifdef SSH_AUTH_SOCK
-docker-wrapper +=-e SSH_AUTH_SOCK=${SSH_AUTH_SOCK} -e SSH_AGENT_PID=${SSH_AGENT_PID} -v '${SSH_AUTH_SOCK}:${SSH_AUTH_SOCK}'
+docker-wrapper +=-e SSH_AUTH_SOCK=/run/host-services/ssh-auth.sock -v '/run/host-services/ssh-auth.sock:/run/host-services/ssh-auth.sock'
 endif
 docker-wrapper +=localenv
 
